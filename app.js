@@ -9,18 +9,9 @@ const searchInput = document.getElementById('searchInput');
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
 
-// 定義等級區間
-const LEVEL_RANGES = [
-    { label: 'Lv. 1-10', min: 1, max: 10 },
-    { label: 'Lv. 11-20', min: 11, max: 20 },
-    { label: 'Lv. 21-30', min: 21, max: 30 },
-    { label: 'Lv. 31-40', min: 31, max: 40 },
-    { label: 'Lv. 41-50', min: 41, max: 50 },
-    { label: 'Lv. 51-60', min: 51, max: 60 },
-    { label: 'Lv. 61-70', min: 61, max: 70 },
-    { label: 'Lv. 71-80', min: 71, max: 80 },
-    { label: 'Lv. 81+', min: 81, max: 999 },
-];
+// 新增： Min/Max 等級輸入框參考
+let minLevelInput;
+let maxLevelInput;
 
 
 // --- 核心 CSV 解析函式 (略) ---
@@ -107,19 +98,15 @@ function mergeMonsterDrops(rawDrops) {
 }
 
 
-// --- 關鍵函式：螢光標記指定文字片段 ---
 function highlightText(text, query) {
     if (!query) return text;
 
-    // 創建正規表達式：() 捕捉匹配到的文字，g 確保全局匹配，i 確保不區分大小寫
     const regex = new RegExp(`(${query})`, 'gi');
     
-    // 將匹配到的文字片段用 <span class="highlight"> 標籤包裹
     return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
 }
 
 
-// --- renderTable 函式 (調用螢光標記) ---
 function renderTable(data) {
     resultsGrid.innerHTML = ''; 
     
@@ -132,13 +119,11 @@ function renderTable(data) {
 
     data.forEach(item => {
         
-        // 1. 處理掉落物品 (逐一標記)
         const dropListHTML = item['掉落物品'].map(drop => {
             const highlightedDrop = highlightText(drop, currentQuery);
             return `<span>${highlightedDrop}</span>`;
         }).join('');
         
-        // 2. 處理怪物名稱 (中英文拆分與標記)
         const fullName = item['怪物名稱'].trim();
         let englishName = fullName;
         let chineseName = '';
@@ -152,7 +137,6 @@ function renderTable(data) {
             chineseName = ''; 
         }
 
-        // 對中英文名稱進行標記
         const highlightedEn = highlightText(englishName, currentQuery);
         const highlightedCn = highlightText(chineseName, currentQuery);
 
@@ -181,69 +165,78 @@ function renderTable(data) {
 }
 
 
-// --- 初始化控制項 & applyFilters 函式 (略) ---
-
+// --- 核心修正：初始化 Min/Max 輸入框 ---
 function initializeControls() {
+    // 1. 生成新的 Min/Max 輸入框 HTML
+    levelFilterControls.innerHTML = `
+        <label for="minLevelInput">等級：</label>
+        <input type="number" id="minLevelInput" placeholder="最小 Lv." value="1" min="1" class="level-input">
+        <span class="level-separator">~</span>
+        <input type="number" id="maxLevelInput" placeholder="最大 Lv." value="999" min="1" class="level-input">
+    `;
+
+    // 2. 取得新的輸入框參考
+    minLevelInput = document.getElementById('minLevelInput');
+    maxLevelInput = document.getElementById('maxLevelInput');
+    
+    // 3. 綁定事件：當輸入值改變時立即過濾
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
     } 
-
-    if (levelFilterControls) {
-        levelFilterControls.innerHTML = LEVEL_RANGES.map((range) => `
-            <label>
-                <input type="checkbox" data-min="${range.min}" data-max="${range.max}" checked>
-                ${range.label}
-            </label>
-        `).join('');
-
-        levelFilterControls.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', applyFilters);
-        });
+    if (minLevelInput) {
+        // 使用 'input' 事件實現即時過濾
+        minLevelInput.addEventListener('input', applyFilters);
+    }
+    if (maxLevelInput) {
+        maxLevelInput.addEventListener('input', applyFilters);
     }
     
+    // 初始載入時應用過濾
     applyFilters(); 
 }
 
+// --- 核心修正：應用自訂等級範圍過濾 ---
 function applyFilters() {
-    // 篩選時使用 trim() 處理後的原始 query
     const query = searchInput.value.trim(); 
     
-    const selectedRanges = Array.from(levelFilterControls.querySelectorAll('input:checked')).map(cb => ({
-        min: parseInt(cb.dataset.min),
-        max: parseInt(cb.dataset.max)
-    }));
+    // 1. 讀取等級過濾數值並進行校驗
+    let minLevel = parseInt(minLevelInput.value);
+    let maxLevel = parseInt(maxLevelInput.value);
     
-    let filtered = MONSTER_DROPS_MERGED; 
-    
-    // 步驟一：等級區間過濾
-    if (selectedRanges.length > 0) {
-        filtered = filtered.filter(item => {
-            const level = parseInt(item['等級']);
-            if (isNaN(level)) return false; 
-            
-            return selectedRanges.some(range => {
-                return level >= range.min && level <= range.max;
-            });
-        });
+    // 數值校驗與設定預設值
+    minLevel = isNaN(minLevel) ? 1 : Math.max(1, minLevel);
+    maxLevel = isNaN(maxLevel) ? 999 : Math.max(1, maxLevel);
+
+    // 確保 min <= max (如果 min > max 則交換數值)
+    if (minLevel > maxLevel) {
+        [minLevel, maxLevel] = [maxLevel, minLevel];
+        minLevelInput.value = minLevel;
+        maxLevelInput.value = maxLevel;
     }
 
-    // 步驟二：單一文字搜尋過濾
+    let filtered = MONSTER_DROPS_MERGED; 
+    
+    // 步驟一：自訂等級範圍過濾
+    filtered = filtered.filter(item => {
+        const level = parseInt(item['等級']);
+        if (isNaN(level)) return false; 
+        
+        // 檢查等級是否在 [minLevel, maxLevel] 範圍內
+        return level >= minLevel && level <= maxLevel;
+    });
+
+    // 步驟二：單一文字搜尋過濾 (保持不變)
     if (query.length > 0) {
-        const lowerCaseQuery = query.toLowerCase(); // 篩選時使用小寫
+        const lowerCaseQuery = query.toLowerCase(); 
         filtered = filtered.filter(item => {
-            // 檢查怪物名稱
             const monsterMatch = item['怪物名稱'].toLowerCase().includes(lowerCaseQuery);
-            
-            // 檢查掉落物品列表
             const dropMatch = item['掉落物品'].some(dropItem => 
                 dropItem.toLowerCase().includes(lowerCaseQuery)
             );
-            
             return monsterMatch || dropMatch;
         });
     }
 
-    // 渲染時，renderTable 會使用 searchInput.value 進行標記
     renderTable(filtered);
     dataStatus.textContent = `找到 ${filtered.length} 筆記錄。`;
 }

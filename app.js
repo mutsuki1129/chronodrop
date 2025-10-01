@@ -23,7 +23,7 @@ const LEVEL_RANGES = [
 ];
 
 
-// --- 核心 CSV 解析函式 (保持不變) ---
+// --- 核心 CSV 解析函式 (略) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
@@ -81,7 +81,6 @@ async function loadData() {
     }
 }
 
-// --- 數據合併函式 (保持不變) ---
 function mergeMonsterDrops(rawDrops) {
     const mergedData = new Map();
 
@@ -108,19 +107,19 @@ function mergeMonsterDrops(rawDrops) {
 }
 
 
-// --- 新增：螢光標記函式 ---
+// --- 關鍵函式：螢光標記指定文字片段 ---
 function highlightText(text, query) {
     if (!query) return text;
 
-    // 創建正規表達式，g 確保全局匹配，i 確保不區分大小寫
+    // 創建正規表達式：() 捕捉匹配到的文字，g 確保全局匹配，i 確保不區分大小寫
     const regex = new RegExp(`(${query})`, 'gi');
     
-    // 使用 replace 方法，將匹配到的文字替換為帶有 highlight class 的 span
+    // 將匹配到的文字片段用 <span class="highlight"> 標籤包裹
     return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
 }
 
 
-// --- 修正: renderTable 函式 (調用螢光標記) ---
+// --- renderTable 函式 (調用螢光標記) ---
 function renderTable(data) {
     resultsGrid.innerHTML = ''; 
     
@@ -129,7 +128,6 @@ function renderTable(data) {
         return;
     }
 
-    // 取得當前的搜尋文字，用於標記
     const currentQuery = searchInput.value.trim();
 
     data.forEach(item => {
@@ -183,7 +181,7 @@ function renderTable(data) {
 }
 
 
-// --- 初始化控制項 & applyFilters 函式 (保持不變) ---
+// --- 初始化控制項 & applyFilters 函式 (略) ---
 
 function initializeControls() {
     if (searchInput) {
@@ -207,7 +205,7 @@ function initializeControls() {
 }
 
 function applyFilters() {
-    // query 用於篩選，不需要是小寫，因為 highlightText 會用正規表達式
+    // 篩選時使用 trim() 處理後的原始 query
     const query = searchInput.value.trim(); 
     
     const selectedRanges = Array.from(levelFilterControls.querySelectorAll('input:checked')).map(cb => ({
@@ -217,7 +215,7 @@ function applyFilters() {
     
     let filtered = MONSTER_DROPS_MERGED; 
     
-    // 步驟一：等級區間過濾 (保持不變)
+    // 步驟一：等級區間過濾
     if (selectedRanges.length > 0) {
         filtered = filtered.filter(item => {
             const level = parseInt(item['等級']);

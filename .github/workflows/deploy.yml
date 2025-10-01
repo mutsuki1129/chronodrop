@@ -1,0 +1,60 @@
+name: Deploy Static Site to Pages
+
+on:
+  push:
+    branches: ["main"] # 在推送到 main 分支時運行
+
+  # 允許從 GitHub Actions 介面手動運行
+  workflow_dispatch:
+
+# 設置權限，允許部署
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 單個並行作業，以防止同時部署
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # 步驟 A: 運行 Build Process
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 設置 Node.js 環境
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 建議使用最新的 LTS 版本
+
+      # 安裝 Parcel 和其他依賴項
+      - name: Install Dependencies
+        run: npm install
+
+      # 執行 Build (Parcel 會自動生成帶 Hash 的檔案並更新 index.html)
+      - name: Build Project
+        run: npm run build
+        
+      # 將 Build 結果（dist 資料夾）上傳到 Artifacts
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist # Parcel 預設的輸出資料夾是 dist
+
+  # 步驟 B: 部署到 GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build # 確保 Build 成功後才部署
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # 部署 Artifacts

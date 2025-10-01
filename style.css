@@ -190,9 +190,10 @@ h1 {
     color: #6c757d;
 
 }
-/* --- 新增：螢光標記樣式 --- */
+/* --- 修正：螢光標記樣式 (柔和金色) --- */
 .highlight {
-    background-color: #FFEB8A; /* 亮黃色背景 */
+    /* 柔和的淺金色，只作用於匹配的文字片段 */
+    background-color: #FFEB8A; 
     color: #333; /* 確保文字清晰可見 */
     padding: 0 2px;
     border-radius: 3px;

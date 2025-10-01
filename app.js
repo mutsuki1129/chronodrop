@@ -22,7 +22,8 @@ const LEVEL_RANGES = [
     { label: 'Lv. 81+', min: 81, max: 999 },
 ];
 
-// --- 核心 CSV 解析函式 ---
+
+// --- 核心 CSV 解析函式 (保持不變) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
@@ -80,7 +81,7 @@ async function loadData() {
     }
 }
 
-// --- 數據合併函式 (資料精簡) ---
+// --- 數據合併函式 (保持不變) ---
 function mergeMonsterDrops(rawDrops) {
     const mergedData = new Map();
 
@@ -106,38 +107,61 @@ function mergeMonsterDrops(rawDrops) {
     return Array.from(mergedData.values());
 }
 
-// --- 表格渲染函式 (生成卡片結構與中英分行) ---
+
+// --- 新增：螢光標記函式 ---
+function highlightText(text, query) {
+    if (!query) return text;
+
+    // 創建正規表達式，g 確保全局匹配，i 確保不區分大小寫
+    const regex = new RegExp(`(${query})`, 'gi');
+    
+    // 使用 replace 方法，將匹配到的文字替換為帶有 highlight class 的 span
+    return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
+}
+
+
+// --- 修正: renderTable 函式 (調用螢光標記) ---
 function renderTable(data) {
-    resultsGrid.innerHTML = ''; // 清空結果容器
+    resultsGrid.innerHTML = ''; 
     
     if (data.length === 0) {
         resultsGrid.innerHTML = '<div class="no-results">查無資料。</div>';
         return;
     }
 
+    // 取得當前的搜尋文字，用於標記
+    const currentQuery = searchInput.value.trim();
+
     data.forEach(item => {
-        const dropListHTML = item['掉落物品'].map(drop => `<span>${drop}</span>`).join('');
         
-        // ** 處理中英文名稱拆分 **
+        // 1. 處理掉落物品 (逐一標記)
+        const dropListHTML = item['掉落物品'].map(drop => {
+            const highlightedDrop = highlightText(drop, currentQuery);
+            return `<span>${highlightedDrop}</span>`;
+        }).join('');
+        
+        // 2. 處理怪物名稱 (中英文拆分與標記)
         const fullName = item['怪物名稱'].trim();
         let englishName = fullName;
         let chineseName = '';
 
-        const match = fullName.match(/(.*)\s*\((.*)\)/); // 匹配格式: Name (中文)
+        const match = fullName.match(/(.*)\s*\((.*)\)/); 
         if (match) {
             englishName = match[1].trim();
             chineseName = match[2].trim();
         } else {
-            // 如果沒有匹配到標準格式，假設怪物名稱全部是英文或中文
             englishName = fullName;
             chineseName = ''; 
         }
 
+        // 對中英文名稱進行標記
+        const highlightedEn = highlightText(englishName, currentQuery);
+        const highlightedCn = highlightText(chineseName, currentQuery);
+
         const nameHTML = `
-            <span class="name-en">${englishName}</span>
-            <span class="name-cn">${chineseName}</span>
+            <span class="name-en">${highlightedEn}</span>
+            <span class="name-cn">${highlightedCn}</span>
         `;
-        // **********************************
         
         const cardHTML = `
             <div class="monster-card">
@@ -159,7 +183,8 @@ function renderTable(data) {
 }
 
 
-// --- 初始化控制項 ---
+// --- 初始化控制項 & applyFilters 函式 (保持不變) ---
+
 function initializeControls() {
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
@@ -181,9 +206,9 @@ function initializeControls() {
     applyFilters(); 
 }
 
-// --- 單一搜尋邏輯 ---
 function applyFilters() {
-    const query = searchInput.value.toLowerCase().trim();
+    // query 用於篩選，不需要是小寫，因為 highlightText 會用正規表達式
+    const query = searchInput.value.trim(); 
     
     const selectedRanges = Array.from(levelFilterControls.querySelectorAll('input:checked')).map(cb => ({
         min: parseInt(cb.dataset.min),
@@ -192,7 +217,7 @@ function applyFilters() {
     
     let filtered = MONSTER_DROPS_MERGED; 
     
-    // 步驟一：等級區間過濾
+    // 步驟一：等級區間過濾 (保持不變)
     if (selectedRanges.length > 0) {
         filtered = filtered.filter(item => {
             const level = parseInt(item['等級']);
@@ -204,21 +229,23 @@ function applyFilters() {
         });
     }
 
-    // 步驟二：單一文字搜尋過濾 (怪物名稱 OR 掉落物品)
+    // 步驟二：單一文字搜尋過濾
     if (query.length > 0) {
+        const lowerCaseQuery = query.toLowerCase(); // 篩選時使用小寫
         filtered = filtered.filter(item => {
             // 檢查怪物名稱
-            const monsterMatch = item['怪物名稱'].toLowerCase().includes(query);
+            const monsterMatch = item['怪物名稱'].toLowerCase().includes(lowerCaseQuery);
             
             // 檢查掉落物品列表
             const dropMatch = item['掉落物品'].some(dropItem => 
-                dropItem.toLowerCase().includes(query)
+                dropItem.toLowerCase().includes(lowerCaseQuery)
             );
             
             return monsterMatch || dropMatch;
         });
     }
 
+    // 渲染時，renderTable 會使用 searchInput.value 進行標記
     renderTable(filtered);
     dataStatus.textContent = `找到 ${filtered.length} 筆記錄。`;
 }

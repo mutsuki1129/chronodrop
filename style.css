@@ -146,12 +146,13 @@ h1 {
     line-height: 1.2;
 }
 
-/* 3B. 數值屬性 */
+/* 3B. 數值屬性 (EXP 截斷修正點) */
 .monster-info-header .level,
 .monster-info-header .hp,
 .monster-info-header .exp {
     font-size: 0.85em;
-    margin-left: 10px;
+    /* 修正 1: 減少數值間的左邊距 */
+    margin-left: 5px; 
     white-space: nowrap; 
     padding-left: 5px;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
@@ -159,6 +160,11 @@ h1 {
 
 .monster-info-header .level {
     border-left: none;
+}
+
+/* 修正 2: 確保 EXP 欄位有足夠的最小寬度，以容納 2000+ 數字 */
+.monster-info-header .exp {
+    min-width: 55px; 
 }
 
 
@@ -171,7 +177,7 @@ h1 {
 }
 
 .drop-list span {
-    /* 這是讓每個掉落物佔據一整行的設定 */
+    /* 確保每個掉落物佔據一整行的設定 */
     display: block; 
     font-size: 0.9em;
     color: #444;
@@ -183,14 +189,13 @@ h1 {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式：最終修正 --- */
+/* --- 螢光標記樣式 --- */
 .highlight {
-    /* 關鍵修正：使用 !important 確保 display: inline 絕對生效 */
+    /* 使用 !important 確保 display: inline 絕對生效，解決整行標註問題 */
     display: inline !important; 
     
     background-color: #FFEB8A; /* 柔和金色 */
     color: #333; 
-    /* 移除 padding 和 border-radius，避免造成視覺延伸 */
     padding: 0; 
     border-radius: 0;
     font-weight: bold;

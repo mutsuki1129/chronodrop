@@ -40,6 +40,13 @@ jobs:
       - name: Build Project
         run: npm run build
         
+      # === 關鍵修正：強制複製 data.csv 到部署目錄 (dist/) ===
+      # 複製 data.csv 到 Parcel 建立的 dist/ 資料夾中
+      - name: Copy Static Assets
+        run: cp data.csv dist/data.csv
+        
+      # ===============================================
+        
       # 將 Build 結果（dist 資料夾）上傳到 Artifacts
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3

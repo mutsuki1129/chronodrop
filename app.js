@@ -165,14 +165,15 @@ function renderTable(data) {
 }
 
 
-// --- 初始化 Min/Max 輸入框 (保持不變) ---
+// --- 初始化 Min/Max 輸入框 (修改初始值為空字串，以符合新的篩選邏輯) ---
 function initializeControls() {
     // 1. 生成新的 Min/Max 輸入框 HTML
+    // 將初始的 value="1" 和 value="999" 移除，改用 placeholder 提示
     levelFilterControls.innerHTML = `
         <label for="minLevelInput">等級：</label>
-        <input type="number" id="minLevelInput" placeholder="最小 Lv." value="1" min="1" class="level-input">
+        <input type="number" id="minLevelInput" placeholder="最小 Lv." min="1" class="level-input">
         <span class="level-separator">~</span>
-        <input type="number" id="maxLevelInput" placeholder="最大 Lv." value="999" min="1" class="level-input">
+        <input type="number" id="maxLevelInput" placeholder="最大 Lv." min="1" class="level-input">
     `;
 
     // 2. 取得新的輸入框參考
@@ -194,28 +195,25 @@ function initializeControls() {
     applyFilters(); 
 }
 
-// --- 核心修正：避免在輸入時自動交換數值 ---
+// --- 核心修正：讀取數值，避免寫回輸入框 ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
-    // 1. 讀取等級過濾數值並進行校驗 (僅校驗數字有效性和最小值)
+    // 1. 讀取等級過濾數值 (直接從輸入框讀取，不對輸入框內容進行寫入/校驗)
     let minLevel = parseInt(minLevelInput.value);
     let maxLevel = parseInt(maxLevelInput.value);
     
-    // 校驗 MinLevel (如果無效或小於 1，則設為 1，並更新輸入框)
-    if (isNaN(minLevel) || minLevel < 1) {
-        minLevel = 1;
-        minLevelInput.value = 1;
-    }
-
-    // 校驗 MaxLevel (如果無效或小於 1，則設為 999，並更新輸入框)
-    if (isNaN(maxLevel) || maxLevel < 1) {
-        maxLevel = 999;
-        maxLevelInput.value = 999;
-    }
+    // 2. 篩選時的邏輯校驗：如果輸入為 NaN 或小於 1，則使用預設篩選值，但不更新輸入框
     
-    // *** 移除自動交換邏輯！讓 min > max 時篩選結果為空，但不干預用戶輸入 ***
-    // if (minLevel > maxLevel) { [minLevel, maxLevel] = [maxLevel, minLevel]; ... } <--- 移除此段
+    // 確保篩選時 minLevel 是有效數字 (>= 1)，否則使用預設值 1
+    minLevel = (isNaN(minLevel) || minLevel < 1) ? 1 : minLevel;
+
+    // 確保篩選時 maxLevel 是有效數字 (>= 1)，否則使用預設值 999
+    // 如果用戶清空最大值，則視為 999
+    maxLevel = (isNaN(maxLevel) || maxLevel < 1) ? 999 : maxLevel;
+    
+    // *** 移除所有對輸入框的寫入操作！ ***
+    // (例如：minLevelInput.value = 1 或 [minLevel, maxLevel] = [maxLevel, minLevel]...)
 
     let filtered = MONSTER_DROPS_MERGED; 
     
@@ -224,7 +222,7 @@ function applyFilters() {
         const level = parseInt(item['等級']);
         if (isNaN(level)) return false; 
         
-        // 篩選：如果 min > max，結果會是空集合，但不會自動交換數值
+        // 篩選：使用處理過的 minLevel 和 maxLevel 進行篩選。
         return level >= minLevel && level <= maxLevel;
     });
 

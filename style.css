@@ -183,15 +183,16 @@ h1 {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式：關鍵修正 --- */
+/* --- 螢光標記樣式：最終修正 --- */
 .highlight {
-    /* 關鍵修正：強制設定為 inline，確保它只包裹搜尋文字的寬度 */
-    display: inline; 
+    /* 關鍵修正：使用 !important 確保 display: inline 絕對生效 */
+    display: inline !important; 
     
     background-color: #FFEB8A; /* 柔和金色 */
     color: #333; 
-    padding: 0 2px;
-    border-radius: 3px;
+    /* 移除 padding 和 border-radius，避免造成視覺延伸 */
+    padding: 0; 
+    border-radius: 0;
     font-weight: bold;
 }
 

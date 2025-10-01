@@ -192,9 +192,10 @@ h1 {
 }
 /* --- 新增：螢光標記樣式 --- */
 .highlight {
-    background-color: #ffc107; /* 亮黃色背景 */
+    background-color: #FFEB8A; /* 亮黃色背景 */
     color: #333; /* 確保文字清晰可見 */
     padding: 0 2px;
     border-radius: 3px;
     font-weight: bold;
 }
+

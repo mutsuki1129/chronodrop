@@ -133,9 +133,9 @@ h1 {
 .monster-info-header .name-en {
     font-size: 1.1em;
     font-weight: bold;
-    white-space: nowrap; /* 不允許換行 */
-    overflow: hidden; /* 超出部分隱藏 */
-    text-overflow: ellipsis; /* 超出部分顯示省略號 */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
     line-height: 1.2;
 }
 
@@ -171,7 +171,8 @@ h1 {
 }
 
 .drop-list span {
-    display: block; /* 每個掉落物佔據一行 */
+    /* 這是讓每個掉落物佔據一整行的設定 */
+    display: block; 
     font-size: 0.9em;
     color: #444;
     padding: 2px 0;
@@ -182,21 +183,22 @@ h1 {
     border-bottom: none;
 }
 
+/* --- 螢光標記樣式：關鍵修正 --- */
+.highlight {
+    /* 關鍵修正：強制設定為 inline，確保它只包裹搜尋文字的寬度 */
+    display: inline; 
+    
+    background-color: #FFEB8A; /* 柔和金色 */
+    color: #333; 
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
 .no-results {
     grid-column: 1 / -1; 
     text-align: center;
     padding: 30px;
     font-size: 1.2em;
     color: #6c757d;
-
 }
-/* --- 修正：螢光標記樣式 (柔和金色) --- */
-.highlight {
-    /* 柔和的淺金色，只作用於匹配的文字片段 */
-    background-color: #FFEB8A; 
-    color: #333; /* 確保文字清晰可見 */
-    padding: 0 2px;
-    border-radius: 3px;
-    font-weight: bold;
-}
-

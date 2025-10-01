@@ -14,7 +14,7 @@ let minLevelInput;
 let maxLevelInput;
 
 
-// --- 核心 CSV 解析函式 (略) ---
+// --- 核心 CSV 解析函式 (保持不變) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
@@ -165,7 +165,7 @@ function renderTable(data) {
 }
 
 
-// --- 核心修正：初始化 Min/Max 輸入框 ---
+// --- 初始化 Min/Max 輸入框 (保持不變) ---
 function initializeControls() {
     // 1. 生成新的 Min/Max 輸入框 HTML
     levelFilterControls.innerHTML = `
@@ -184,7 +184,6 @@ function initializeControls() {
         searchInput.addEventListener('input', applyFilters);
     } 
     if (minLevelInput) {
-        // 使用 'input' 事件實現即時過濾
         minLevelInput.addEventListener('input', applyFilters);
     }
     if (maxLevelInput) {
@@ -195,24 +194,28 @@ function initializeControls() {
     applyFilters(); 
 }
 
-// --- 核心修正：應用自訂等級範圍過濾 ---
+// --- 核心修正：避免在輸入時自動交換數值 ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
-    // 1. 讀取等級過濾數值並進行校驗
+    // 1. 讀取等級過濾數值並進行校驗 (僅校驗數字有效性和最小值)
     let minLevel = parseInt(minLevelInput.value);
     let maxLevel = parseInt(maxLevelInput.value);
     
-    // 數值校驗與設定預設值
-    minLevel = isNaN(minLevel) ? 1 : Math.max(1, minLevel);
-    maxLevel = isNaN(maxLevel) ? 999 : Math.max(1, maxLevel);
-
-    // 確保 min <= max (如果 min > max 則交換數值)
-    if (minLevel > maxLevel) {
-        [minLevel, maxLevel] = [maxLevel, minLevel];
-        minLevelInput.value = minLevel;
-        maxLevelInput.value = maxLevel;
+    // 校驗 MinLevel (如果無效或小於 1，則設為 1，並更新輸入框)
+    if (isNaN(minLevel) || minLevel < 1) {
+        minLevel = 1;
+        minLevelInput.value = 1;
     }
+
+    // 校驗 MaxLevel (如果無效或小於 1，則設為 999，並更新輸入框)
+    if (isNaN(maxLevel) || maxLevel < 1) {
+        maxLevel = 999;
+        maxLevelInput.value = 999;
+    }
+    
+    // *** 移除自動交換邏輯！讓 min > max 時篩選結果為空，但不干預用戶輸入 ***
+    // if (minLevel > maxLevel) { [minLevel, maxLevel] = [maxLevel, minLevel]; ... } <--- 移除此段
 
     let filtered = MONSTER_DROPS_MERGED; 
     
@@ -221,7 +224,7 @@ function applyFilters() {
         const level = parseInt(item['等級']);
         if (isNaN(level)) return false; 
         
-        // 檢查等級是否在 [minLevel, maxLevel] 範圍內
+        // 篩選：如果 min > max，結果會是空集合，但不會自動交換數值
         return level >= minLevel && level <= maxLevel;
     });
 

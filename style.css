@@ -53,32 +53,42 @@ h1 {
     font-size: 14px;
 }
 
-/* 等級區間篩選控制項 */
+/* --- 修正：等級區間篩選控制項 (改為輸入框) --- */
 .level-filter-controls {
     display: flex;
-    flex-wrap: wrap; 
-    gap: 15px;
+    /* 移除 flex-wrap: wrap; 確保輸入框保持在同一行 */
+    align-items: center; 
+    justify-content: center;
+    gap: 10px; /* 元件間距 */
     margin-top: 15px;
     padding: 10px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     background-color: #fcfcfc;
-    justify-content: center;
     width: 100%;
     max-width: 900px;
 }
 
-.level-filter-controls label {
+/* 自訂等級輸入框與標籤樣式 */
+.level-filter-controls label, 
+.level-separator {
+    font-weight: bold;
     font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    user-select: none; 
+    white-space: nowrap;
 }
 
-.level-filter-controls input[type="checkbox"] {
-    margin-right: 5px;
-    transform: scale(1.1);
+.level-input {
+    width: 60px; /* 輸入框寬度 */
+    padding: 8px 5px; 
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.level-input:focus {
+    border-color: #007bff;
+    outline: none;
 }
 
 
@@ -191,12 +201,12 @@ h1 {
 
 /* --- 螢光標記樣式 --- */
 .highlight {
-    /* 使用 !important 確保 display: inline 絕對生效，解決整行標註問題 */
+    /* 關鍵修正：使用 !important 確保 display: inline 絕對生效，解決整行標註問題 */
     display: inline !important; 
     
     background-color: #FFEB8A; /* 柔和金色 */
     color: #333; 
-    padding: 0; 
+    padding: 0; /* 移除 padding 避免視覺延伸 */
     border-radius: 0;
     font-weight: bold;
 }

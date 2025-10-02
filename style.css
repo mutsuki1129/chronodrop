@@ -56,7 +56,6 @@ h1 {
 /* --- 修正：等級區間篩選控制項 (改為輸入框) --- */
 .level-filter-controls {
     display: flex;
-    /* 移除 flex-wrap: wrap; 確保輸入框保持在同一行 */
     align-items: center; 
     justify-content: center;
     gap: 10px; /* 元件間距 */
@@ -91,8 +90,25 @@ h1 {
     outline: none;
 }
 
+/* --- 新增：重置按鈕樣式 --- */
+.reset-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: white;
+    background-color: #6c757d; /* 灰色調，代表重置 */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: 10px; /* 稍微與輸入框區隔 */
+}
 
-/* --- 核心樣式：怪物卡片佈局 --- */
+.reset-button:hover {
+    background-color: #5a6268;
+}
+
+
+/* --- 核心樣式：怪物卡片佈局 (保持不變) --- */
 
 /* 1. 實現卡片橫向排列 (使用 CSS Grid) */
 .results-grid {
@@ -161,7 +177,6 @@ h1 {
 .monster-info-header .hp,
 .monster-info-header .exp {
     font-size: 0.85em;
-    /* 修正 1: 減少數值間的左邊距 */
     margin-left: 5px; 
     white-space: nowrap; 
     padding-left: 5px;
@@ -172,7 +187,7 @@ h1 {
     border-left: none;
 }
 
-/* 修正 2: 確保 EXP 欄位有足夠的最小寬度，以容納 2000+ 數字 */
+/* 確保 EXP 欄位有足夠的最小寬度 */
 .monster-info-header .exp {
     min-width: 55px; 
 }
@@ -187,7 +202,6 @@ h1 {
 }
 
 .drop-list span {
-    /* 確保每個掉落物佔據一整行的設定 */
     display: block; 
     font-size: 0.9em;
     color: #444;
@@ -201,12 +215,12 @@ h1 {
 
 /* --- 螢光標記樣式 --- */
 .highlight {
-    /* 關鍵修正：使用 !important 確保 display: inline 絕對生效，解決整行標註問題 */
+    /* 關鍵修正：使用 !important 確保 display: inline 絕對生效 */
     display: inline !important; 
     
-    background-color: #FFEB8A; /* 柔和金色 */
+    background-color: #FFEB8A; 
     color: #333; 
-    padding: 0; /* 移除 padding 避免視覺延伸 */
+    padding: 0; 
     border-radius: 0;
     font-weight: bold;
 }

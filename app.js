@@ -165,20 +165,29 @@ function renderTable(data) {
 }
 
 
-// --- 初始化 Min/Max 輸入框 (修改初始值為空字串，以符合新的篩選邏輯) ---
+// --- 新增：重置等級篩選的函式 ---
+function resetLevelFilters() {
+    minLevelInput.value = ''; 
+    maxLevelInput.value = ''; 
+    applyFilters(); // 重新觸發篩選
+}
+
+
+// --- 初始化 Min/Max 輸入框 ---
 function initializeControls() {
-    // 1. 生成新的 Min/Max 輸入框 HTML
-    // 將初始的 value="1" 和 value="999" 移除，改用 placeholder 提示
+    // 1. 生成新的 Min/Max 輸入框 和 重置按鈕 HTML
     levelFilterControls.innerHTML = `
         <label for="minLevelInput">等級：</label>
         <input type="number" id="minLevelInput" placeholder="最小 Lv." min="1" class="level-input">
         <span class="level-separator">~</span>
         <input type="number" id="maxLevelInput" placeholder="最大 Lv." min="1" class="level-input">
+        <button id="resetLevelBtn" class="reset-button">重置</button>
     `;
 
-    // 2. 取得新的輸入框參考
+    // 2. 取得新的輸入框和按鈕參考
     minLevelInput = document.getElementById('minLevelInput');
     maxLevelInput = document.getElementById('maxLevelInput');
+    const resetBtn = document.getElementById('resetLevelBtn');
     
     // 3. 綁定事件：當輸入值改變時立即過濾
     if (searchInput) {
@@ -190,16 +199,20 @@ function initializeControls() {
     if (maxLevelInput) {
         maxLevelInput.addEventListener('input', applyFilters);
     }
+    // 新增：綁定重置按鈕事件
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetLevelFilters);
+    }
     
     // 初始載入時應用過濾
     applyFilters(); 
 }
 
-// --- 核心修正：讀取數值，避免寫回輸入框 ---
+// --- 應用篩選 (保持上次的修正，避免自動填回) ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
-    // 1. 讀取等級過濾數值 (直接從輸入框讀取，不對輸入框內容進行寫入/校驗)
+    // 1. 讀取等級過濾數值 (直接從輸入框讀取)
     let minLevel = parseInt(minLevelInput.value);
     let maxLevel = parseInt(maxLevelInput.value);
     
@@ -208,13 +221,9 @@ function applyFilters() {
     // 確保篩選時 minLevel 是有效數字 (>= 1)，否則使用預設值 1
     minLevel = (isNaN(minLevel) || minLevel < 1) ? 1 : minLevel;
 
-    // 確保篩選時 maxLevel 是有效數字 (>= 1)，否則使用預設值 999
-    // 如果用戶清空最大值，則視為 999
+    // 確保篩選時 maxLevel 是有效數字 (>= 1)，否則使用預設值 999 (全範圍)
     maxLevel = (isNaN(maxLevel) || maxLevel < 1) ? 999 : maxLevel;
     
-    // *** 移除所有對輸入框的寫入操作！ ***
-    // (例如：minLevelInput.value = 1 或 [minLevel, maxLevel] = [maxLevel, minLevel]...)
-
     let filtered = MONSTER_DROPS_MERGED; 
     
     // 步驟一：自訂等級範圍過濾
@@ -222,7 +231,6 @@ function applyFilters() {
         const level = parseInt(item['等級']);
         if (isNaN(level)) return false; 
         
-        // 篩選：使用處理過的 minLevel 和 maxLevel 進行篩選。
         return level >= minLevel && level <= maxLevel;
     });
 

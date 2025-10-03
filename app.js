@@ -8,17 +8,53 @@ const resultsGrid = document.getElementById('resultsGrid');
 const searchInput = document.getElementById('searchInput'); 
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
+const themeToggleContainer = document.getElementById('themeToggleContainer'); // 新增
 
 // 新增： Min/Max 等級輸入框參考
 let minLevelInput;
 let maxLevelInput;
 
 
+// --- 主題切換相關函式 ---
+
+// 在頁面載入時從 Local Storage 讀取主題偏好
+function loadThemePreference() {
+    // 預設為 'light'
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.className = currentTheme + '-theme';
+
+    // 更新按鈕文字 (在初始化按鈕後處理)
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = currentTheme === 'light' ? '夜間模式' : '日間模式';
+    }
+}
+
+// 切換主題並儲存偏好
+function toggleTheme() {
+    const isDark = document.body.classList.contains('dark-theme');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    // 更新 body class
+    document.body.className = newTheme + '-theme';
+    // 儲存偏好
+    localStorage.setItem('theme', newTheme);
+    
+    // 更新按鈕文字
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = newTheme === 'light' ? '夜間模式' : '日間模式';
+    }
+}
+
 // --- 核心 CSV 解析函式 (保持不變) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
     try {
+        // 先載入主題偏好，避免閃爍
+        loadThemePreference();
+
         dataStatus.textContent = "數據載入中...";
         const response = await fetch(CSV_FILE);
         
@@ -165,17 +201,16 @@ function renderTable(data) {
 }
 
 
-// --- 新增：重置等級篩選的函式 ---
 function resetLevelFilters() {
     minLevelInput.value = ''; 
     maxLevelInput.value = ''; 
-    applyFilters(); // 重新觸發篩選
+    applyFilters(); 
 }
 
 
-// --- 初始化 Min/Max 輸入框 ---
+// --- 初始化所有控制項 (新增主題切換按鈕) ---
 function initializeControls() {
-    // 1. 生成新的 Min/Max 輸入框 和 重置按鈕 HTML
+    // 1. 生成等級篩選區塊 HTML
     levelFilterControls.innerHTML = `
         <label for="minLevelInput">等級：</label>
         <input type="number" id="minLevelInput" placeholder="最小 Lv." min="1" class="level-input">
@@ -184,12 +219,18 @@ function initializeControls() {
         <button id="resetLevelBtn" class="reset-button">重置</button>
     `;
 
-    // 2. 取得新的輸入框和按鈕參考
+    // 2. 新增主題切換按鈕 HTML
+    themeToggleContainer.innerHTML = `
+        <button id="themeToggleBtn" class="theme-toggle-button"></button>
+    `;
+    
+    // 3. 取得所有參考
     minLevelInput = document.getElementById('minLevelInput');
     maxLevelInput = document.getElementById('maxLevelInput');
     const resetBtn = document.getElementById('resetLevelBtn');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
     
-    // 3. 綁定事件：當輸入值改變時立即過濾
+    // 4. 綁定事件
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
     } 
@@ -199,34 +240,33 @@ function initializeControls() {
     if (maxLevelInput) {
         maxLevelInput.addEventListener('input', applyFilters);
     }
-    // 新增：綁定重置按鈕事件
     if (resetBtn) {
         resetBtn.addEventListener('click', resetLevelFilters);
     }
+    // 新增：綁定主題切換按鈕事件
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+    
+    // 因為 loadThemePreference 在 loadData 中已經執行過一次，這裡只需要確保按鈕文字被更新
+    loadThemePreference(); 
     
     // 初始載入時應用過濾
     applyFilters(); 
 }
 
-// --- 應用篩選 (保持上次的修正，避免自動填回) ---
+// --- 應用篩選 (保持不變) ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
-    // 1. 讀取等級過濾數值 (直接從輸入框讀取)
     let minLevel = parseInt(minLevelInput.value);
     let maxLevel = parseInt(maxLevelInput.value);
     
-    // 2. 篩選時的邏輯校驗：如果輸入為 NaN 或小於 1，則使用預設篩選值，但不更新輸入框
-    
-    // 確保篩選時 minLevel 是有效數字 (>= 1)，否則使用預設值 1
     minLevel = (isNaN(minLevel) || minLevel < 1) ? 1 : minLevel;
-
-    // 確保篩選時 maxLevel 是有效數字 (>= 1)，否則使用預設值 999 (全範圍)
     maxLevel = (isNaN(maxLevel) || maxLevel < 1) ? 999 : maxLevel;
     
     let filtered = MONSTER_DROPS_MERGED; 
     
-    // 步驟一：自訂等級範圍過濾
     filtered = filtered.filter(item => {
         const level = parseInt(item['等級']);
         if (isNaN(level)) return false; 
@@ -234,7 +274,6 @@ function applyFilters() {
         return level >= minLevel && level <= maxLevel;
     });
 
-    // 步驟二：單一文字搜尋過濾 (保持不變)
     if (query.length > 0) {
         const lowerCaseQuery = query.toLowerCase(); 
         filtered = filtered.filter(item => {

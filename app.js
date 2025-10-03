@@ -8,7 +8,7 @@ const resultsGrid = document.getElementById('resultsGrid');
 const searchInput = document.getElementById('searchInput'); 
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
-const themeToggleContainer = document.getElementById('themeToggleContainer'); // 新增
+const themeToggleContainer = document.getElementById('themeToggleContainer'); 
 
 // 新增： Min/Max 等級輸入框參考
 let minLevelInput;
@@ -201,14 +201,15 @@ function renderTable(data) {
 }
 
 
+// --- 重置等級篩選的函式 ---
 function resetLevelFilters() {
     minLevelInput.value = ''; 
     maxLevelInput.value = ''; 
-    applyFilters(); 
+    applyFilters(); // 重新觸發篩選
 }
 
 
-// --- 初始化所有控制項 (新增主題切換按鈕) ---
+// --- 初始化所有控制項 (包含主題切換按鈕) ---
 function initializeControls() {
     // 1. 生成等級篩選區塊 HTML
     levelFilterControls.innerHTML = `
@@ -248,25 +249,32 @@ function initializeControls() {
         themeToggleBtn.addEventListener('click', toggleTheme);
     }
     
-    // 因為 loadThemePreference 在 loadData 中已經執行過一次，這裡只需要確保按鈕文字被更新
+    // 確保按鈕文字正確顯示
     loadThemePreference(); 
     
     // 初始載入時應用過濾
     applyFilters(); 
 }
 
-// --- 應用篩選 (保持不變) ---
+// --- 應用篩選 (避免自動填回) ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
+    // 1. 讀取等級過濾數值 (直接從輸入框讀取)
     let minLevel = parseInt(minLevelInput.value);
     let maxLevel = parseInt(maxLevelInput.value);
     
+    // 2. 篩選時的邏輯校驗：如果輸入為 NaN 或小於 1，則使用預設篩選值，但不更新輸入框
+    
+    // 確保篩選時 minLevel 是有效數字 (>= 1)，否則使用預設值 1 (全範圍最小值)
     minLevel = (isNaN(minLevel) || minLevel < 1) ? 1 : minLevel;
+
+    // 確保篩選時 maxLevel 是有效數字 (>= 1)，否則使用預設值 999 (全範圍最大值)
     maxLevel = (isNaN(maxLevel) || maxLevel < 1) ? 999 : maxLevel;
     
     let filtered = MONSTER_DROPS_MERGED; 
     
+    // 步驟一：自訂等級範圍過濾
     filtered = filtered.filter(item => {
         const level = parseInt(item['等級']);
         if (isNaN(level)) return false; 
@@ -274,6 +282,7 @@ function applyFilters() {
         return level >= minLevel && level <= maxLevel;
     });
 
+    // 步驟二：單一文字搜尋過濾 (保持不變)
     if (query.length > 0) {
         const lowerCaseQuery = query.toLowerCase(); 
         filtered = filtered.filter(item => {

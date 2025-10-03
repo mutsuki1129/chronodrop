@@ -1,27 +1,83 @@
+/* --- 0. 主題變數與全域樣式 --- */
+/* 日間模式變數 (預設) */
+:root, .light-theme {
+    --bg-color: #f4f7f9;
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --secondary-text-color: #6c757d;
+    --header-bg: #007bff; /* 藍色 */
+    --drop-list-bg: #f9f9f9;
+    --border-color: #dcdcdc;
+    --input-border: #ccc;
+    --reset-btn-bg: #6c757d; /* 灰色 */
+    --search-focus: #007bff;
+}
+
+/* 夜間模式變數 */
+.dark-theme {
+    --bg-color: #1a1a2e; /* 深藍背景 */
+    --card-bg: #21253c; /* 深卡片背景 */
+    --text-color: #e0e0e0;
+    --secondary-text-color: #b0b0b0;
+    --header-bg: #4a4e69; /* 柔和深藍標頭 */
+    --drop-list-bg: #2c314c;
+    --border-color: #3e445b;
+    --input-border: #4a4e69;
+    --reset-btn-bg: #8d99ae;
+    --search-focus: #90a0ff;
+}
+
+
 /* 基本重設與佈局 */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f7f9;
-    color: #333;
+    background-color: var(--bg-color); /* 使用變數 */
+    color: var(--text-color); /* 使用變數 */
     margin: 0;
     padding: 20px;
     display: flex;
     justify-content: center;
+    transition: background-color 0.3s, color 0.3s; /* 平滑切換 */
 }
 
 .container {
-    background: #ffffff;
+    background: var(--card-bg); /* 使用變數 */
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 1400px; 
+    position: relative; /* 為了絕對定位主題切換按鈕 */
+}
+
+/* --- 1. 主題切換按鈕容器及樣式 --- */
+#themeToggleContainer {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+}
+
+.theme-toggle-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: white;
+    background-color: var(--header-bg); /* 與標頭背景色一致 */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.theme-toggle-button:hover {
+    filter: brightness(1.2); /* 懸停時稍微變亮 */
 }
 
 h1 {
     text-align: center;
-    color: #007bff;
+    color: var(--header-bg); /* 使用變數 */
     margin-bottom: 20px;
+    margin-top: 0; /* 確保標題不影響按鈕排版 */
 }
 
 /* 篩選控制項區塊 */
@@ -36,34 +92,36 @@ h1 {
     padding: 10px 15px;
     width: 100%;
     max-width: 600px; 
-    border: 2px solid #ccc;
+    border: 2px solid var(--input-border); /* 使用變數 */
+    background-color: var(--card-bg);
+    color: var(--text-color);
     border-radius: 4px;
     font-size: 16px;
     transition: border-color 0.3s;
 }
 
 #searchInput:focus {
-    border-color: #007bff;
+    border-color: var(--search-focus); /* 使用變數 */
     outline: none;
 }
 
 .status-message {
     margin-top: 10px;
-    color: #6c757d;
+    color: var(--secondary-text-color); /* 使用變數 */
     font-size: 14px;
 }
 
-/* --- 修正：等級區間篩選控制項 (改為輸入框) --- */
+/* 等級區間篩選控制項 */
 .level-filter-controls {
     display: flex;
     align-items: center; 
     justify-content: center;
-    gap: 10px; /* 元件間距 */
+    gap: 10px; 
     margin-top: 15px;
     padding: 10px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color); /* 使用變數 */
     border-radius: 4px;
-    background-color: #fcfcfc;
+    background-color: var(--drop-list-bg); /* 使用變數 */
     width: 100%;
     max-width: 900px;
 }
@@ -77,38 +135,40 @@ h1 {
 }
 
 .level-input {
-    width: 60px; /* 輸入框寬度 */
+    width: 60px; 
     padding: 8px 5px; 
     text-align: center;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border); /* 使用變數 */
     border-radius: 4px;
     font-size: 14px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
 }
 
 .level-input:focus {
-    border-color: #007bff;
+    border-color: var(--search-focus); 
     outline: none;
 }
 
-/* --- 新增：重置按鈕樣式 --- */
+/* 重置按鈕樣式 */
 .reset-button {
     padding: 8px 12px;
     font-size: 14px;
     color: white;
-    background-color: #6c757d; /* 灰色調，代表重置 */
+    background-color: var(--reset-btn-bg); /* 使用變數 */
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-left: 10px; /* 稍微與輸入框區隔 */
+    margin-left: 10px; 
 }
 
 .reset-button:hover {
-    background-color: #5a6268;
+    filter: brightness(1.1);
 }
 
 
-/* --- 核心樣式：怪物卡片佈局 (保持不變) --- */
+/* --- 核心樣式：怪物卡片佈局 --- */
 
 /* 1. 實現卡片橫向排列 (使用 CSS Grid) */
 .results-grid {
@@ -121,12 +181,12 @@ h1 {
 
 /* 2. 怪物卡片樣式 */
 .monster-card {
-    background: #ffffff;
-    border: 1px solid #dcdcdc;
+    background: var(--card-bg); /* 使用變數 */
+    border: 1px solid var(--border-color); /* 使用變數 */
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
     overflow: hidden; 
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
 }
 
 .monster-card:hover {
@@ -139,8 +199,8 @@ h1 {
     display: flex;
     justify-content: space-between; 
     align-items: center;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--header-bg); /* 使用變數 */
+    color: white; 
     padding: 10px 12px;
     font-weight: bold;
 }
@@ -152,7 +212,7 @@ h1 {
     min-width: 100px; 
     margin-right: 8px;
     display: flex;
-    flex-direction: column; /* 垂直堆疊 */
+    flex-direction: column; 
 }
 
 /* 英文名稱 (固定在第一行) */
@@ -197,16 +257,16 @@ h1 {
 .drop-list {
     padding: 10px;
     line-height: 1.5;
-    background-color: #f9f9f9;
+    background-color: var(--drop-list-bg); /* 使用變數 */
     min-height: 100px; 
 }
 
 .drop-list span {
     display: block; 
     font-size: 0.9em;
-    color: #444;
+    color: var(--text-color); /* 使用變數 */
     padding: 2px 0;
-    border-bottom: 1px dotted #e0e0e0;
+    border-bottom: 1px dotted var(--border-color); /* 使用變數 */
 }
 
 .drop-list span:last-child {
@@ -230,5 +290,5 @@ h1 {
     text-align: center;
     padding: 30px;
     font-size: 1.2em;
-    color: #6c757d;
+    color: var(--secondary-text-color); /* 使用變數 */
 }

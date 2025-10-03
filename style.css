@@ -303,3 +303,19 @@ h1 {
     font-size: 1.2em;
     color: var(--secondary-text-color); /* 使用變數 */
 }
+
+/* --- 新增：連結樣式修正，移除底線 --- */
+a {
+    /* 移除所有連結的底線 */
+    text-decoration: none; 
+    
+    /* 確保在夜間模式下連結顏色依然是可讀的亮色 */
+    color: inherit; 
+    
+    transition: color 0.2s;
+}
+
+a:hover {
+    /* 懸停時略微變暗，提示可點擊 */
+    filter: brightness(0.9); 
+}

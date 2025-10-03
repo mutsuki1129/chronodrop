@@ -11,20 +11,22 @@
     --input-border: #ccc;
     --reset-btn-bg: #6c757d; /* 灰色 */
     --search-focus: #007bff;
+    --h1-color: #007bff; /* 日間模式標題色 */
 }
 
 /* 夜間模式變數 - 調整文字顏色以增加對比 */
 .dark-theme {
     --bg-color: #1a1a2e; /* 深藍背景 */
     --card-bg: #21253c; /* 深卡片背景 */
-    --text-color: #f8f8ff; /* 調整：使用更亮的顏色 (接近純白) */
+    --text-color: #f8f8ff; /* 使用更亮的顏色 (接近純白) */
     --secondary-text-color: #b0b0b0;
-    --header-bg: #4a4e69; /* 柔和深藍標頭 */
+    --header-bg: #4a4e69; /* 柔和深藍標頭背景色 */
     --drop-list-bg: #2c314c;
     --border-color: #3e445b;
     --input-border: #4a4e69;
     --reset-btn-bg: #8d99ae;
     --search-focus: #90a0ff;
+    --h1-color: #ffc107; /* 調整：夜間模式標題色改為亮黃/金色 */
 }
 
 
@@ -75,7 +77,7 @@ body {
 
 h1 {
     text-align: center;
-    color: var(--header-bg); /* 使用變數 */
+    color: var(--h1-color); /* **修正：使用新的標題顏色變數** */
     margin-bottom: 20px;
     margin-top: 0; /* 確保標題不影響按鈕排版 */
 }
@@ -273,14 +275,14 @@ h1 {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式 - 修正為淺藍綠色背景與深色文字 --- */
+/* --- 螢光標記樣式 - 修正為極深背景+淺色文字，實現最大清晰度 --- */
 .highlight {
     display: inline !important; 
     
-    /* 修正：使用淺藍綠色作為柔和背景 */
-    background-color: #cff4fc; 
-    /* 修正：使用深色文字確保最高清晰度 */
-    color: #1a1a2e; 
+    /* 修正：使用標頭的標準藍色作為深色背景，提供強烈的視覺區塊感 */
+    background-color: #007bff; 
+    /* 修正：文字改為白色，確保最強烈的對比和清晰度 */
+    color: white; 
     padding: 0; 
     border-radius: 0;
     font-weight: bold;

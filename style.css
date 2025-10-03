@@ -273,12 +273,14 @@ h1 {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式 --- */
+/* --- 螢光標記樣式 - 修正為淺藍綠色背景與深色文字 --- */
 .highlight {
     display: inline !important; 
     
-    background-color: #FFEB8A; /* 保持亮黃色背景 */
-    color: #1a1a2e; /* 調整：使用夜間模式的深色背景作為文字顏色，確保高對比 */
+    /* 修正：使用淺藍綠色作為柔和背景 */
+    background-color: #cff4fc; 
+    /* 修正：使用深色文字確保最高清晰度 */
+    color: #1a1a2e; 
     padding: 0; 
     border-radius: 0;
     font-weight: bold;

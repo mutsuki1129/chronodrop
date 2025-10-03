@@ -13,8 +13,8 @@
     --search-focus: #007bff;
     --h1-color: #007bff; /* 日間模式標題色 */
     
-    /* 修正：日間模式螢光標籤配色 - 柔和淺色 */
-    --highlight-bg-color: #cff4fc; 
+    /* 修正：日間模式螢光標籤背景 - 調整為更深的藍色 */
+    --highlight-bg-color: #a0e0ff; /* 從淺藍綠改為中度藍，增強對比 */
     --highlight-text-color: #333; 
 }
 
@@ -32,7 +32,7 @@
     --search-focus: #90a0ff;
     --h1-color: #ffc107; /* 夜間模式標題色改為亮黃/金色 */
     
-    /* 修正：夜間模式螢光標籤配色 - 高對比鮮豔色 */
+    /* 夜間模式螢光標籤配色 - 保持高對比鮮豔色 */
     --highlight-bg-color: #ff3b30; 
     --highlight-text-color: #f8f8ff; 
 }

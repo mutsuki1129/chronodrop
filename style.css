@@ -13,11 +13,11 @@
     --search-focus: #007bff;
 }
 
-/* 夜間模式變數 */
+/* 夜間模式變數 - 調整文字顏色以增加對比 */
 .dark-theme {
     --bg-color: #1a1a2e; /* 深藍背景 */
     --card-bg: #21253c; /* 深卡片背景 */
-    --text-color: #e0e0e0;
+    --text-color: #f8f8ff; /* 調整：使用更亮的顏色 (接近純白) */
     --secondary-text-color: #b0b0b0;
     --header-bg: #4a4e69; /* 柔和深藍標頭 */
     --drop-list-bg: #2c314c;
@@ -275,11 +275,10 @@ h1 {
 
 /* --- 螢光標記樣式 --- */
 .highlight {
-    /* 關鍵修正：使用 !important 確保 display: inline 絕對生效 */
     display: inline !important; 
     
-    background-color: #FFEB8A; 
-    color: #333; 
+    background-color: #FFEB8A; /* 保持亮黃色背景 */
+    color: #1a1a2e; /* 調整：使用夜間模式的深色背景作為文字顏色，確保高對比 */
     padding: 0; 
     border-radius: 0;
     font-weight: bold;

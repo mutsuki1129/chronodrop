@@ -12,11 +12,13 @@
     --reset-btn-bg: #6c757d; /* 灰色 */
     --search-focus: #007bff;
     --h1-color: #007bff; /* 日間模式標題色 */
+    /* 新增：螢光標籤的文字顏色，與卡片背景色相反 */
+    --highlight-text-color: #ffffff; /* 日間模式文字使用白色 */
 }
 
 /* 夜間模式變數 - 調整文字顏色以增加對比 */
 .dark-theme {
-    --bg-color: #1a1a2e; /* 深藍背景 - 作為標籤文字的顏色使用 */
+    --bg-color: #1a1a2e; /* 深藍背景 */
     --card-bg: #21253c; /* 深卡片背景 */
     --text-color: #f8f8ff; /* 使用更亮的顏色 (接近純白) */
     --secondary-text-color: #b0b0b0;
@@ -27,6 +29,8 @@
     --reset-btn-bg: #8d99ae;
     --search-focus: #90a0ff;
     --h1-color: #ffc107; /* 夜間模式標題色改為亮黃/金色 */
+    /* 修正：螢光標籤的文字顏色，使用亮色 */
+    --highlight-text-color: #f8f8ff; /* 夜間模式文字使用亮白 */
 }
 
 
@@ -275,14 +279,14 @@ h1 {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式 - 修正為純黃色背景 + 深藍文字 --- */
+/* --- 螢光標記樣式 - 最終修正：極亮背景 + 高對比文字 --- */
 .highlight {
     display: inline !important; 
     
-    /* 修正：使用純黃色作為螢光背景，提供最高亮度對比 */
-    background-color: #FFFF00; 
-    /* 修正：文字使用夜間模式的背景深藍色，確保最強烈的視覺清晰度 */
-    color: #1a1a2e; 
+    /* 修正：使用鮮豔的紅色作為背景，強制引起視覺注意 */
+    background-color: #ff3b30; 
+    /* 修正：文字顏色使用主題的高亮色，確保文字筆劃清晰 */
+    color: var(--highlight-text-color); 
     padding: 0; 
     border-radius: 0;
     font-weight: bold;

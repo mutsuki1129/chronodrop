@@ -16,7 +16,7 @@
 
 /* 夜間模式變數 - 調整文字顏色以增加對比 */
 .dark-theme {
-    --bg-color: #1a1a2e; /* 深藍背景 */
+    --bg-color: #1a1a2e; /* 深藍背景 - 作為標籤文字的顏色使用 */
     --card-bg: #21253c; /* 深卡片背景 */
     --text-color: #f8f8ff; /* 使用更亮的顏色 (接近純白) */
     --secondary-text-color: #b0b0b0;
@@ -275,14 +275,14 @@ h1 {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式 - 修正為亮綠色背景 + 深黑色文字 --- */
+/* --- 螢光標記樣式 - 修正為純黃色背景 + 深藍文字 --- */
 .highlight {
     display: inline !important; 
     
-    /* 修正：使用亮綠色作為螢光背景 */
-    background-color: #aaffaa; 
-    /* 修正：文字改為深黑色，確保最強烈的對比和清晰度 */
-    color: #000000; 
+    /* 修正：使用純黃色作為螢光背景，提供最高亮度對比 */
+    background-color: #FFFF00; 
+    /* 修正：文字使用夜間模式的背景深藍色，確保最強烈的視覺清晰度 */
+    color: #1a1a2e; 
     padding: 0; 
     border-radius: 0;
     font-weight: bold;

@@ -13,16 +13,16 @@
     --search-focus: #007bff;
     --h1-color: #007bff; /* 日間模式標題色 */
     
-    /* 日間模式螢光標籤配色 - 柔和中度藍（最新調整） */
+    /* 螢光標籤配色 - 日間 */
     --highlight-bg-color: #a0e0ff; 
     --highlight-text-color: #333; 
 }
 
-/* 夜間模式變數 - 調整文字顏色以增加對比 */
+/* 夜間模式變數 */
 .dark-theme {
     --bg-color: #1a1a2e; /* 深藍背景 */
     --card-bg: #21253c; /* 深卡片背景 */
-    --text-color: #f8f8ff; /* 使用更亮的顏色 (接近純白) */
+    --text-color: #f8f8ff; /* 亮文字 */
     --secondary-text-color: #b0b0b0;
     --header-bg: #4a4e69; /* 柔和深藍標頭背景色 */
     --drop-list-bg: #2c314c;
@@ -30,9 +30,9 @@
     --input-border: #4a4e69;
     --reset-btn-bg: #8d99ae;
     --search-focus: #90a0ff;
-    --h1-color: #ffc107; /* 夜間模式標題色改為亮黃/金色 */
+    --h1-color: #ffc107; /* 亮黃/金色標題色 */
     
-    /* 夜間模式螢光標籤配色 - 保持高對比鮮豔紅 */
+    /* 螢光標籤配色 - 夜間 */
     --highlight-bg-color: #ff3b30; 
     --highlight-text-color: #f8f8ff; 
 }
@@ -41,23 +41,23 @@
 /* 基本重設與佈局 */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color); /* 使用變數 */
-    color: var(--text-color); /* 使用變數 */
+    background-color: var(--bg-color);
+    color: var(--text-color);
     margin: 0;
     padding: 20px;
     display: flex;
     justify-content: center;
-    transition: background-color 0.3s, color 0.3s; /* 平滑切換 */
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
-    background: var(--card-bg); /* 使用變數 */
+    background: var(--card-bg);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 1400px; 
-    position: relative; /* 為了絕對定位主題切換按鈕 */
+    position: relative;
 }
 
 /* --- 1. 主題切換按鈕容器及樣式 --- */
@@ -72,7 +72,7 @@ body {
     padding: 8px 12px;
     font-size: 14px;
     color: white;
-    background-color: var(--header-bg); /* 與標頭背景色一致 */
+    background-color: var(--header-bg);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -80,14 +80,14 @@ body {
 }
 
 .theme-toggle-button:hover {
-    filter: brightness(1.2); /* 懸停時稍微變亮 */
+    filter: brightness(1.2);
 }
 
 h1 {
     text-align: center;
-    color: var(--h1-color); /* 使用新的標題顏色變數 */
+    color: var(--h1-color);
     margin-bottom: 20px;
-    margin-top: 0; /* 確保標題不影響按鈕排版 */
+    margin-top: 0;
 }
 
 /* 篩選控制項區塊 */
@@ -102,7 +102,7 @@ h1 {
     padding: 10px 15px;
     width: 100%;
     max-width: 600px; 
-    border: 2px solid var(--input-border); /* 使用變數 */
+    border: 2px solid var(--input-border);
     background-color: var(--card-bg);
     color: var(--text-color);
     border-radius: 4px;
@@ -111,13 +111,13 @@ h1 {
 }
 
 #searchInput:focus {
-    border-color: var(--search-focus); /* 使用變數 */
+    border-color: var(--search-focus);
     outline: none;
 }
 
 .status-message {
     margin-top: 10px;
-    color: var(--secondary-text-color); /* 使用變數 */
+    color: var(--secondary-text-color);
     font-size: 14px;
 }
 
@@ -129,9 +129,9 @@ h1 {
     gap: 10px; 
     margin-top: 15px;
     padding: 10px;
-    border: 1px solid var(--border-color); /* 使用變數 */
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background-color: var(--drop-list-bg); /* 使用變數 */
+    background-color: var(--drop-list-bg);
     width: 100%;
     max-width: 900px;
 }
@@ -148,7 +148,7 @@ h1 {
     width: 60px; 
     padding: 8px 5px; 
     text-align: center;
-    border: 1px solid var(--input-border); /* 使用變數 */
+    border: 1px solid var(--input-border);
     border-radius: 4px;
     font-size: 14px;
     background-color: var(--card-bg);
@@ -165,7 +165,7 @@ h1 {
     padding: 8px 12px;
     font-size: 14px;
     color: white;
-    background-color: var(--reset-btn-bg); /* 使用變數 */
+    background-color: var(--reset-btn-bg);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -191,8 +191,8 @@ h1 {
 
 /* 2. 怪物卡片樣式 */
 .monster-card {
-    background: var(--card-bg); /* 使用變數 */
-    border: 1px solid var(--border-color); /* 使用變數 */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
     overflow: hidden; 
@@ -209,7 +209,7 @@ h1 {
     display: flex;
     justify-content: space-between; 
     align-items: center;
-    background-color: var(--header-bg); /* 使用變數 */
+    background-color: var(--header-bg);
     color: white; 
     padding: 10px 12px;
     font-weight: bold;
@@ -242,7 +242,7 @@ h1 {
     line-height: 1.2;
 }
 
-/* 3B. 數值屬性 (EXP 截斷修正點) */
+/* 3B. 數值屬性 */
 .monster-info-header .level,
 .monster-info-header .hp,
 .monster-info-header .exp {
@@ -257,46 +257,48 @@ h1 {
     border-left: none;
 }
 
-/* 確保 EXP 欄位有足夠的最小寬度 */
 .monster-info-header .exp {
     min-width: 55px; 
 }
 
-/* --- 新增：HP/EXP 參考值樣式 --- */
+/* --- 新增：HP/EXP 參考值樣式 (置中顯示) --- */
 .monster-stats {
     text-align: center; /* 置中 */
     padding: 5px 10px;
     font-size: 0.9em;
-    color: var(--secondary-text-color); /* 使用次要文字顏色 */
-    background-color: var(--drop-list-bg); /* 與掉落列表使用相同的背景 */
-    border-bottom: 1px solid var(--border-color); /* 增加一個分隔線 */
+    font-weight: bold;
+    color: var(--secondary-text-color);
+    background-color: var(--drop-list-bg);
+    border-bottom: 1px solid var(--border-color);
 }
 .monster-stats strong {
     color: var(--text-color); /* 強調數值 */
+    font-size: 1.1em;
+    margin-left: 5px;
 }
 
 
-/* 4. 掉落物品列表的樣式 (堆疊在 header 正下方) */
+/* 4. 掉落物品列表的樣式 */
 .drop-list {
     padding: 10px;
     line-height: 1.5;
-    background-color: var(--drop-list-bg); /* 使用變數 */
+    background-color: var(--drop-list-bg);
     min-height: 100px; 
 }
 
 .drop-list span {
     display: block; 
     font-size: 0.9em;
-    color: var(--text-color); /* 使用變數 */
+    color: var(--text-color);
     padding: 2px 0;
-    border-bottom: 1px dotted var(--border-color); /* 使用變數 */
+    border-bottom: 1px dotted var(--border-color);
 }
 
 .drop-list span:last-child {
     border-bottom: none;
 }
 
-/* --- 螢光標記樣式 - 使用變數，實現雙模式不同配色 --- */
+/* --- 螢光標記樣式 --- */
 .highlight {
     display: inline !important; 
     
@@ -314,21 +316,20 @@ h1 {
     text-align: center;
     padding: 30px;
     font-size: 1.2em;
-    color: var(--secondary-text-color); /* 使用變數 */
+    color: var(--secondary-text-color);
 }
 
-/* --- 連結樣式修正，移除底線 --- */
+/* --- 連結樣式修正 --- */
 a {
     /* 移除所有連結的底線 */
     text-decoration: none; 
     
-    /* 確保連結顏色繼承自父元素或其預設值 */
+    /* 確保在夜間模式下連結顏色依然是可讀的亮色 */
     color: inherit; 
     
     transition: color 0.2s;
 }
 
 a:hover {
-    /* 懸停時略微變暗，提示可點擊 */
     filter: brightness(0.9); 
 }

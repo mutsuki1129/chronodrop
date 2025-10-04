@@ -129,3 +129,61 @@ function resetFilters() {
     searchInput.value = '';
     minLevelInput.value = '';
     maxLevelInput.value = '';
+    filterAndRender();
+}
+
+/**
+ * 逃逸正則表達式中的特殊字符
+ * @param {string} string - 輸入字串
+ * @returns {string} - 逃逸後的字串
+ */
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& 意指整個匹配到的字串
+}
+
+// --- 主題切換功能 ---
+
+// 儲存主題設定
+function saveTheme(theme) {
+    localStorage.setItem('theme', theme);
+}
+
+// 載入主題設定
+function loadTheme() {
+    return localStorage.getItem('theme') || 'light';
+}
+
+// 應用主題
+function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    body.classList.toggle('dark-theme', isDark);
+    body.classList.toggle('light-theme', !isDark);
+    themeToggle.textContent = isDark ? '日間模式' : '夜間模式';
+}
+
+// 初始化/切換主題
+function initTheme() {
+    const currentTheme = loadTheme();
+    applyTheme(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+        const newTheme = body.classList.contains('dark-theme') ? 'light' : 'dark';
+        applyTheme(newTheme);
+        saveTheme(newTheme);
+    });
+}
+
+
+// --- 事件監聽器 ---
+
+// 搜尋/篩選事件
+searchInput.addEventListener('input', filterAndRender);
+minLevelInput.addEventListener('input', filterAndRender);
+maxLevelInput.addEventListener('input', filterAndRender);
+resetFiltersButton.addEventListener('click', resetFilters);
+
+// 頁面載入時執行初次渲染
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    filterAndRender();
+});

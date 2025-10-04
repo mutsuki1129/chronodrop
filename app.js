@@ -33,8 +33,9 @@ function createMonsterCard(monster, highlightText) {
         return text.replace(highlightRegex, (match) => `<span class="highlight">${match}</span>`);
     };
 
-    // --- 新增邏輯：計算 HP/EXP ---
+    // --- 邏輯：計算 HP/EXP ---
     let hpPerExpValue = 'N/A';
+    // 使用 parseInt 處理 level/hp/exp，如果它們是 'none' 或缺失會得到 NaN
     const hp = parseInt(monster.hp);
     const exp = parseInt(monster.exp);
 
@@ -86,7 +87,8 @@ function filterAndRender() {
     const filteredResults = originalMonsterData.filter(monster => {
         const monsterLevel = parseInt(monster.level);
 
-        // 等級過濾：如果等級是 'none' 或不在範圍內，則跳過
+        // 等級過濾：如果等級是 'none' (NaN) 且不在範圍內，或等級在範圍外，則跳過
+        // 如果 level 是 'none' (得到 NaN)，則跳過數字篩選，直接通過等級（假設 'none' 怪物應始終顯示）
         if (!isNaN(monsterLevel) && (monsterLevel < minLevel || monsterLevel > maxLevel)) {
             return false;
         }
@@ -127,61 +129,3 @@ function resetFilters() {
     searchInput.value = '';
     minLevelInput.value = '';
     maxLevelInput.value = '';
-    filterAndRender();
-}
-
-/**
- * 逃逸正則表達式中的特殊字符
- * @param {string} string - 輸入字串
- * @returns {string} - 逃逸後的字串
- */
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& 意指整個匹配到的字串
-}
-
-// --- 主題切換功能 ---
-
-// 儲存主題設定
-function saveTheme(theme) {
-    localStorage.setItem('theme', theme);
-}
-
-// 載入主題設定
-function loadTheme() {
-    return localStorage.getItem('theme') || 'light';
-}
-
-// 應用主題
-function applyTheme(theme) {
-    const isDark = theme === 'dark';
-    body.classList.toggle('dark-theme', isDark);
-    body.classList.toggle('light-theme', !isDark);
-    themeToggle.textContent = isDark ? '日間模式' : '夜間模式';
-}
-
-// 初始化/切換主題
-function initTheme() {
-    const currentTheme = loadTheme();
-    applyTheme(currentTheme);
-
-    themeToggle.addEventListener('click', () => {
-        const newTheme = body.classList.contains('dark-theme') ? 'light' : 'dark';
-        applyTheme(newTheme);
-        saveTheme(newTheme);
-    });
-}
-
-
-// --- 事件監聽器 ---
-
-// 搜尋/篩選事件
-searchInput.addEventListener('input', filterAndRender);
-minLevelInput.addEventListener('input', filterAndRender);
-maxLevelInput.addEventListener('input', filterAndRender);
-resetFiltersButton.addEventListener('click', resetFilters);
-
-// 頁面載入時執行初次渲染
-document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    filterAndRender();
-});

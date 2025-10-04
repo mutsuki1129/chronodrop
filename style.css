@@ -13,8 +13,8 @@
     --search-focus: #007bff;
     --h1-color: #007bff; /* 日間模式標題色 */
     
-    /* 修正：日間模式螢光標籤背景 - 調整為更深的藍色 */
-    --highlight-bg-color: #a0e0ff; /* 從淺藍綠改為中度藍，增強對比 */
+    /* 日間模式螢光標籤配色 - 柔和中度藍（最新調整） */
+    --highlight-bg-color: #a0e0ff; 
     --highlight-text-color: #333; 
 }
 
@@ -32,7 +32,7 @@
     --search-focus: #90a0ff;
     --h1-color: #ffc107; /* 夜間模式標題色改為亮黃/金色 */
     
-    /* 夜間模式螢光標籤配色 - 保持高對比鮮豔色 */
+    /* 夜間模式螢光標籤配色 - 保持高對比鮮豔紅 */
     --highlight-bg-color: #ff3b30; 
     --highlight-text-color: #f8f8ff; 
 }
@@ -262,6 +262,19 @@ h1 {
     min-width: 55px; 
 }
 
+/* --- 新增：HP/EXP 參考值樣式 --- */
+.monster-stats {
+    text-align: center; /* 置中 */
+    padding: 5px 10px;
+    font-size: 0.9em;
+    color: var(--secondary-text-color); /* 使用次要文字顏色 */
+    background-color: var(--drop-list-bg); /* 與掉落列表使用相同的背景 */
+    border-bottom: 1px solid var(--border-color); /* 增加一個分隔線 */
+}
+.monster-stats strong {
+    color: var(--text-color); /* 強調數值 */
+}
+
 
 /* 4. 掉落物品列表的樣式 (堆疊在 header 正下方) */
 .drop-list {
@@ -304,12 +317,12 @@ h1 {
     color: var(--secondary-text-color); /* 使用變數 */
 }
 
-/* --- 新增：連結樣式修正，移除底線 --- */
+/* --- 連結樣式修正，移除底線 --- */
 a {
     /* 移除所有連結的底線 */
     text-decoration: none; 
     
-    /* 確保在夜間模式下連結顏色依然是可讀的亮色 */
+    /* 確保連結顏色繼承自父元素或其預設值 */
     color: inherit; 
     
     transition: color 0.2s;

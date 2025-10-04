@@ -192,12 +192,18 @@ function renderTable(data) {
         let hpPerExpValue = 'N/A';
         const hp = parseInt(item['生命值']);
         const exp = parseInt(item['基礎經驗']);
+        const levelStr = item['等級'].toLowerCase();
 
-        if (!isNaN(hp) && !isNaN(exp) && exp > 0) {
+        // 處理 HP/EXP 數值為 none 的情況
+        if (levelStr === 'none' && item['生命值'].toLowerCase() === 'none' && item['基礎經驗'].toLowerCase() === 'none') {
+             // 如果等級/HP/EXP 都是 none，則顯示 'None'
+             hpPerExpValue = 'None';
+        } else if (!isNaN(hp) && !isNaN(exp) && exp > 0) {
             // 計算並四捨五入到小數點後兩位
             hpPerExpValue = (hp / exp).toFixed(2);
-        } else if (item['生命值'] === 'none' || item['基礎經驗'] === 'none' || exp === 0) {
-             hpPerExpValue = 'None';
+        } else {
+             // 如果只有部分數值為 none 或 EXP 為 0，則顯示 'N/A'
+             hpPerExpValue = 'N/A';
         }
 
         const statsHTML = `
@@ -257,7 +263,6 @@ function initializeControls() {
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     
     // 4. 綁定事件
-    // 解決 'addEventListener on null' 的問題：先檢查元素是否存在
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
     } 
@@ -282,11 +287,11 @@ function initializeControls() {
     applyFilters(); 
 }
 
-// --- 應用篩選 ---
+// --- 應用篩選 (已修正等級篩選邏輯) ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
-    // 1. 讀取等級過濾數值 (如果輸入框存在)
+    // 1. 讀取等級過濾數值
     let minLevel = minLevelInput ? parseInt(minLevelInput.value) : 1;
     let maxLevel = maxLevelInput ? parseInt(maxLevelInput.value) : 999;
     
@@ -296,17 +301,19 @@ function applyFilters() {
     
     let filtered = MONSTER_DROPS_MERGED; 
     
-    // 步驟一：自訂等級範圍過濾
+    // 步驟一：自訂等級範圍過濾 (修正點在這裡)
     filtered = filtered.filter(item => {
         const levelStr = item['等級'].toLowerCase();
-        
-        // 處理 'none' 值的怪物：它們不參與數字篩選，除非 minLevel 或 maxLevel 設為 'none' (但我們在這裡強制為數字)
-        if (levelStr === 'none' || isNaN(parseInt(levelStr))) {
-            return false; // 不顯示等級為 'none' 的怪物，因為無法判斷是否在範圍內
+        const level = parseInt(levelStr); // 嘗試解析等級
+
+        // 情況 1: 等級是有效的數字
+        if (!isNaN(level)) {
+            return level >= minLevel && level <= maxLevel;
         }
-        
-        const level = parseInt(levelStr);
-        return level >= minLevel && level <= maxLevel;
+
+        // 情況 2: 等級是非數字 (例如 'none' 或空白)。
+        // 依照使用者要求，非數字等級的怪物應該被顯示，因為它們不違反任何數字範圍。
+        return true; 
     });
 
     // 步驟二：單一文字搜尋過濾

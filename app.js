@@ -1,189 +1,329 @@
-// 預設的怪物數據（使用您提供的格式）
-const monsterData = [
-    { nameEn: "Snail", nameCn: "蝸牛", level: 1, hp: 8, exp: 3, drops: ["Green Headband (綠色頭巾)", "White Undershirt (白色內衣)", "Brown Rocky Suit (棕色岩石裝)", "Sword (劍)", "Red Potion (紅色藥水)", "Green Apple (綠色蘋果)", "Scroll for Helmet for Defense 10% (頭盔防禦力 10% 捲軸)", "Scroll for Cape for Defense 60% (披風防禦力 60% 捲軸)", "Snail Shell (蝸牛殼)", "Bronze Ore (銅礦石)", "Garnet Ore (石榴石礦石)"] },
-    { nameEn: "Blue Snail", nameCn: "藍蝸牛", level: 2, hp: 15, exp: 4, drops: ["Blue One-lined T-Shirt (藍色橫紋T恤)", "Grey / Brown Training Shirt (灰/棕色訓練服)", "Red-Striped T-Shirt (黃紅條紋T恤)", "Grey Thick Sweat Pants (灰色厚運動褲)", "Grey / Brown Training Pants (灰/棕色訓練褲)", "Red Potion (紅色藥水)", "Green Apple (青蘋果)", "Scroll for Cape for Defense 100% (披風防禦力 100% 捲軸)", "Blue Snail Shell (藍色蝸牛殼)"] },
-    { nameEn: "Jr. Balrog", nameCn: "小巴洛古", level: 80, hp: 50000, exp: 2000, drops: ["Wooden Legend Shield (古老木盾)", "Silver Ancient Shield (銀古老盾牌)", "Scroll for Shoes for Jump 10% (鞋子跳躍 10% 捲軸)"] },
-    // 您可以在此添加更多怪物數據
-];
+// 修正後的標頭名稱
+const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗', '掉落物品'];
+let MONSTER_DROPS_RAW = []; 
+let MONSTER_DROPS_MERGED = []; 
 
-const searchInput = document.getElementById('searchInput');
-const minLevelInput = document.getElementById('minLevel');
-const maxLevelInput = document.getElementById('maxLevel');
-const resetFiltersButton = document.getElementById('resetFilters');
-const resultsGrid = document.getElementById('resultsGrid');
-const statusMessage = document.getElementById('statusMessage');
-const themeToggle = document.getElementById('themeToggle');
-const body = document.body;
+// 元素參考
+const resultsGrid = document.getElementById('resultsGrid'); 
+const searchInput = document.getElementById('searchInput'); 
+const dataStatus = document.getElementById('dataStatus');
+const levelFilterControls = document.getElementById('levelFilterControls');
+const themeToggleContainer = document.getElementById('themeToggleContainer'); 
 
-// 儲存原始數據以供重置
-const originalMonsterData = JSON.parse(JSON.stringify(monsterData)); 
+// 新增： Min/Max 等級輸入框參考 (會在 initializeControls 中被賦值)
+let minLevelInput;
+let maxLevelInput;
 
-/**
- * 創建怪物卡片的 HTML 內容
- * @param {Object} monster - 怪物物件
- * @param {string} highlightText - 需要標記的文字
- * @returns {string} - 怪物卡片的 HTML 字串
- */
-function createMonsterCard(monster, highlightText) {
-    const highlightRegex = highlightText ? new RegExp(escapeRegExp(highlightText), 'gi') : null;
 
-    // 輔助函數：對文字進行螢光標記
-    const applyHighlight = (text) => {
-        if (!highlightRegex) return text;
-        return text.replace(highlightRegex, (match) => `<span class="highlight">${match}</span>`);
-    };
+// --- 主題切換相關函式 ---
 
-    // --- 邏輯：計算 HP/EXP ---
-    let hpPerExpValue = 'N/A';
-    // 使用 parseInt 處理 level/hp/exp，如果它們是 'none' 或缺失會得到 NaN
-    const hp = parseInt(monster.hp);
-    const exp = parseInt(monster.exp);
+// 在頁面載入時從 Local Storage 讀取主題偏好
+function loadThemePreference() {
+    // 預設為 'light'
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.body.className = currentTheme + '-theme';
 
-    if (!isNaN(hp) && !isNaN(exp) && exp > 0) {
-        hpPerExpValue = (hp / exp).toFixed(2);
-    } else if (monster.hp === 'none' || monster.exp === 'none' || exp === 0) {
-         hpPerExpValue = 'None';
+    // 更新按鈕文字 (在初始化按鈕後處理)
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = currentTheme === 'light' ? '夜間模式' : '日間模式';
+    }
+}
+
+// 切換主題並儲存偏好
+function toggleTheme() {
+    const isDark = document.body.classList.contains('dark-theme');
+    const newTheme = isDark ? 'light' : 'dark';
+    
+    // 更新 body class
+    document.body.className = newTheme + '-theme';
+    // 儲存偏好
+    localStorage.setItem('theme', newTheme);
+    
+    // 更新按鈕文字
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = newTheme === 'light' ? '夜間模式' : '日間模式';
+    }
+}
+
+// --- 核心 CSV 解析函式 ---
+async function loadData() {
+    const CSV_FILE = 'data.csv';
+
+    try {
+        // 先載入主題偏好，避免閃爍
+        loadThemePreference();
+
+        dataStatus.textContent = "數據載入中...";
+        const response = await fetch(CSV_FILE);
+        
+        if (!response.ok) {
+            dataStatus.textContent = `錯誤: 無法載入數據 (${response.status} ${response.statusText})。請檢查 data.csv 檔案是否存在。`;
+            return;
+        }
+        
+        const csvText = await response.text();
+        const normalizedText = csvText.trim().replace(/^\uFEFF/, '');
+        const lines = normalizedText.split(/\r?\n/);
+        
+        if (lines.length <= 1) {
+            dataStatus.textContent = "數據載入成功，共 0 筆記錄。";
+            initializeControls();
+            return;
+        }
+
+        const actualHeaders = lines[0].split(',').map(h => h.trim());
+        
+        if (actualHeaders.length !== HEADERS.length) {
+            dataStatus.textContent = `錯誤: 欄位數不匹配！預期 ${HEADERS.length} 欄位，實際找到 ${actualHeaders.length} 欄位。`;
+            return;
+        }
+        
+        MONSTER_DROPS_RAW = [];
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            
+            // 由於掉落物品可能包含逗號，這裡需要更穩健的 CSV 解析，
+            // 但為保持簡潔，我們假設您的數據不包含逗號，且數量與標頭相符
+            const values = line.split(',').map(v => v.trim()); 
+            
+            if (values.length === actualHeaders.length) {
+                const row = {};
+                actualHeaders.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                MONSTER_DROPS_RAW.push(row);
+            }
+        }
+        
+        MONSTER_DROPS_MERGED = mergeMonsterDrops(MONSTER_DROPS_RAW);
+        
+        dataStatus.textContent = `數據載入成功，共 ${MONSTER_DROPS_MERGED.length} 筆怪物記錄。`;
+        
+        renderTable(MONSTER_DROPS_MERGED);
+        initializeControls(); 
+        
+    } catch (error) {
+        dataStatus.textContent = "發生致命錯誤，請檢查瀏覽器 Console。";
+        console.error("An error occurred during data loading or parsing:", error);
+    }
+}
+
+function mergeMonsterDrops(rawDrops) {
+    const mergedData = new Map();
+
+    rawDrops.forEach(item => {
+        const monsterName = item['怪物名稱'];
+        
+        if (!mergedData.has(monsterName)) {
+            // 僅在第一次遇到怪物時記錄等級/HP/EXP 資訊
+            mergedData.set(monsterName, {
+                '怪物名稱': monsterName,
+                '等級': item['等級'],
+                '生命值': item['生命值'],
+                '基礎經驗': item['基礎經驗'],
+                '掉落物品': []
+            });
+        }
+        
+        const dropItem = item['掉落物品'].trim();
+        if (dropItem) {
+            mergedData.get(monsterName)['掉落物品'].push(dropItem);
+        }
+    });
+
+    return Array.from(mergedData.values());
+}
+
+
+function highlightText(text, query) {
+    if (!query) return text;
+
+    // 使用正規表達式進行全局、不分大小寫的替換
+    const regex = new RegExp(`(${query})`, 'gi'); 
+    
+    // 使用 replace 的 function 參數來確保大小寫保持不變，只包裹標籤
+    return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
+}
+
+
+function renderTable(data) {
+    resultsGrid.innerHTML = ''; 
+    
+    if (data.length === 0) {
+        resultsGrid.innerHTML = '<div class="no-results">查無資料。</div>';
+        return;
     }
 
-    // 應用標記到怪物名稱
-    const nameEnHighlighted = applyHighlight(monster.nameEn);
-    const nameCnHighlighted = applyHighlight(monster.nameCn);
+    const currentQuery = searchInput.value.trim();
 
-    // 應用標記到掉落物品
-    const dropItemsHtml = monster.drops.map(drop => {
-        return `<span>${applyHighlight(drop)}</span>`;
-    }).join('');
+    data.forEach(item => {
+        
+        const dropListHTML = item['掉落物品'].map(drop => {
+            const highlightedDrop = highlightText(drop, currentQuery);
+            return `<span>${highlightedDrop}</span>`;
+        }).join('');
+        
+        const fullName = item['怪物名稱'].trim();
+        let englishName = fullName;
+        let chineseName = '';
 
-    return `
-        <div class="monster-card">
-            <div class="monster-info-header">
-                <div class="name-container">
-                    <span class="name-en">${nameEnHighlighted}</span>
-                    <span class="name-cn">${nameCnHighlighted}</span>
-                </div>
-                <span class="level">Lv. ${monster.level}</span>
-                <span class="hp">HP: ${monster.hp}</span>
-                <span class="exp">EXP: ${monster.exp}</span>
-            </div>
+        // 嘗試從 'English Name (中文名稱)' 格式中分離名稱
+        const match = fullName.match(/(.*)\s*\((.*)\)/); 
+        if (match) {
+            englishName = match[1].trim();
+            chineseName = match[2].trim();
+        } else {
+            englishName = fullName;
+            chineseName = ''; 
+        }
+
+        const highlightedEn = highlightText(englishName, currentQuery);
+        const highlightedCn = highlightText(chineseName, currentQuery);
+
+        const nameHTML = `
+            <span class="name-en">${highlightedEn}</span>
+            <span class="name-cn">${highlightedCn}</span>
+        `;
+        
+        // --- 核心新增邏輯：計算 HP/EXP ---
+        let hpPerExpValue = 'N/A';
+        const hp = parseInt(item['生命值']);
+        const exp = parseInt(item['基礎經驗']);
+
+        if (!isNaN(hp) && !isNaN(exp) && exp > 0) {
+            // 計算並四捨五入到小數點後兩位
+            hpPerExpValue = (hp / exp).toFixed(2);
+        } else if (item['生命值'] === 'none' || item['基礎經驗'] === 'none' || exp === 0) {
+             hpPerExpValue = 'None';
+        }
+
+        const statsHTML = `
             <div class="monster-stats">
                 HP/EXP: <strong>${hpPerExpValue}</strong>
             </div>
-            <div class="drop-list">
-                ${dropItemsHtml}
-            </div>
-        </div>
-    `;
-}
-
-/**
- * 執行篩選、排序和渲染結果
- */
-function filterAndRender() {
-    const searchText = searchInput.value.trim().toLowerCase();
-    const minLevel = parseInt(minLevelInput.value) || 1;
-    const maxLevel = parseInt(maxLevelInput.value) || Infinity;
-    
-    // 1. 執行過濾
-    const filteredResults = originalMonsterData.filter(monster => {
-        const monsterLevel = parseInt(monster.level);
-
-        // 等級過濾：如果等級是 'none' (NaN) 且不在範圍內，或等級在範圍外，則跳過
-        // 如果 level 是 'none' (得到 NaN)，則跳過數字篩選，直接通過等級（假設 'none' 怪物應始終顯示）
-        if (!isNaN(monsterLevel) && (monsterLevel < minLevel || monsterLevel > maxLevel)) {
-            return false;
-        }
-
-        if (!searchText) {
-            return true;
-        }
-
-        // 搜尋文字過濾
-        // 檢查怪物名稱 (中/英) 或掉落物品是否包含搜尋詞
-        const matchesName = monster.nameEn.toLowerCase().includes(searchText) || 
-                            monster.nameCn.toLowerCase().includes(searchText);
+        `;
         
-        const matchesDrop = monster.drops.some(drop => 
-            drop.toLowerCase().includes(searchText)
-        );
-
-        return matchesName || matchesDrop;
+        const cardHTML = `
+            <div class="monster-card">
+                <div class="monster-info-header">
+                    <div class="name-container">
+                        ${nameHTML} 
+                    </div>
+                    <span class="level">Lv. ${item['等級']}</span>
+                    <span class="hp">HP: ${item['生命值']}</span>
+                    <span class="exp">EXP: ${item['基礎經驗']}</span>
+                </div>
+                ${statsHTML} <div class="drop-list">
+                    ${dropListHTML}
+                </div>
+            </div>
+        `;
+        resultsGrid.insertAdjacentHTML('beforeend', cardHTML);
     });
+}
 
-    // 2. 渲染結果
-    resultsGrid.innerHTML = '';
 
-    if (filteredResults.length === 0) {
-        resultsGrid.innerHTML = '<div class="no-results">未找到符合條件的怪物。</div>';
-        statusMessage.textContent = '找到 0 筆記錄。';
-    } else {
-        const resultsHtml = filteredResults.map(monster => createMonsterCard(monster, searchText)).join('');
-        resultsGrid.innerHTML = resultsHtml;
-        statusMessage.textContent = `找到 ${filteredResults.length} 筆記錄。`;
+// --- 重置等級篩選的函式 ---
+function resetLevelFilters() {
+    if (minLevelInput) minLevelInput.value = ''; 
+    if (maxLevelInput) maxLevelInput.value = ''; 
+    applyFilters(); // 重新觸發篩選
+}
+
+
+// --- 初始化所有控制項 (包含主題切換按鈕) ---
+function initializeControls() {
+    // 1. 生成等級篩選區塊 HTML
+    levelFilterControls.innerHTML = `
+        <label for="minLevelInput">等級：</label>
+        <input type="number" id="minLevelInput" placeholder="最小 Lv." min="1" class="level-input">
+        <span class="level-separator">~</span>
+        <input type="number" id="maxLevelInput" placeholder="最大 Lv." min="1" class="level-input">
+        <button id="resetLevelBtn" class="reset-button">重置</button>
+    `;
+
+    // 2. 新增主題切換按鈕 HTML
+    themeToggleContainer.innerHTML = `
+        <button id="themeToggleBtn" class="theme-toggle-button"></button>
+    `;
+    
+    // 3. 取得所有參考 (在 HTML 元素被插入後才能取得)
+    minLevelInput = document.getElementById('minLevelInput');
+    maxLevelInput = document.getElementById('maxLevelInput');
+    const resetBtn = document.getElementById('resetLevelBtn');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    
+    // 4. 綁定事件
+    // 解決 'addEventListener on null' 的問題：先檢查元素是否存在
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    } 
+    if (minLevelInput) {
+        minLevelInput.addEventListener('input', applyFilters);
     }
+    if (maxLevelInput) {
+        maxLevelInput.addEventListener('input', applyFilters);
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetLevelFilters);
+    }
+    // 綁定主題切換按鈕事件
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+    
+    // 確保按鈕文字正確顯示
+    loadThemePreference(); 
+    
+    // 初始載入時應用過濾
+    applyFilters(); 
 }
 
-/**
- * 重置篩選條件並重新渲染
- */
-function resetFilters() {
-    searchInput.value = '';
-    minLevelInput.value = '';
-    maxLevelInput.value = '';
-    filterAndRender();
-}
-
-/**
- * 逃逸正則表達式中的特殊字符
- * @param {string} string - 輸入字串
- * @returns {string} - 逃逸後的字串
- */
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& 意指整個匹配到的字串
-}
-
-// --- 主題切換功能 ---
-
-// 儲存主題設定
-function saveTheme(theme) {
-    localStorage.setItem('theme', theme);
-}
-
-// 載入主題設定
-function loadTheme() {
-    return localStorage.getItem('theme') || 'light';
-}
-
-// 應用主題
-function applyTheme(theme) {
-    const isDark = theme === 'dark';
-    body.classList.toggle('dark-theme', isDark);
-    body.classList.toggle('light-theme', !isDark);
-    themeToggle.textContent = isDark ? '日間模式' : '夜間模式';
-}
-
-// 初始化/切換主題
-function initTheme() {
-    const currentTheme = loadTheme();
-    applyTheme(currentTheme);
-
-    themeToggle.addEventListener('click', () => {
-        const newTheme = body.classList.contains('dark-theme') ? 'light' : 'dark';
-        applyTheme(newTheme);
-        saveTheme(newTheme);
+// --- 應用篩選 ---
+function applyFilters() {
+    const query = searchInput.value.trim(); 
+    
+    // 1. 讀取等級過濾數值 (如果輸入框存在)
+    let minLevel = minLevelInput ? parseInt(minLevelInput.value) : 1;
+    let maxLevel = maxLevelInput ? parseInt(maxLevelInput.value) : 999;
+    
+    // 2. 篩選時的邏輯校驗：如果輸入為 NaN 或小於 1，則使用預設值
+    minLevel = (isNaN(minLevel) || minLevel < 1) ? 1 : minLevel;
+    maxLevel = (isNaN(maxLevel) || maxLevel < 1) ? 999 : maxLevel;
+    
+    let filtered = MONSTER_DROPS_MERGED; 
+    
+    // 步驟一：自訂等級範圍過濾
+    filtered = filtered.filter(item => {
+        const levelStr = item['等級'].toLowerCase();
+        
+        // 處理 'none' 值的怪物：它們不參與數字篩選，除非 minLevel 或 maxLevel 設為 'none' (但我們在這裡強制為數字)
+        if (levelStr === 'none' || isNaN(parseInt(levelStr))) {
+            return false; // 不顯示等級為 'none' 的怪物，因為無法判斷是否在範圍內
+        }
+        
+        const level = parseInt(levelStr);
+        return level >= minLevel && level <= maxLevel;
     });
+
+    // 步驟二：單一文字搜尋過濾
+    if (query.length > 0) {
+        const lowerCaseQuery = query.toLowerCase(); 
+        filtered = filtered.filter(item => {
+            const monsterMatch = item['怪物名稱'].toLowerCase().includes(lowerCaseQuery);
+            const dropMatch = item['掉落物品'].some(dropItem => 
+                dropItem.toLowerCase().includes(lowerCaseQuery)
+            );
+            return monsterMatch || dropMatch;
+        });
+    }
+
+    renderTable(filtered);
+    dataStatus.textContent = `找到 ${filtered.length} 筆記錄。`;
 }
 
-
-// --- 事件監聽器 ---
-
-// 搜尋/篩選事件
-searchInput.addEventListener('input', filterAndRender);
-minLevelInput.addEventListener('input', filterAndRender);
-maxLevelInput.addEventListener('input', filterAndRender);
-resetFiltersButton.addEventListener('click', resetFilters);
-
-// 頁面載入時執行初次渲染
-document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    filterAndRender();
-});
+// --- 初始化 ---
+document.addEventListener('DOMContentLoaded', loadData);

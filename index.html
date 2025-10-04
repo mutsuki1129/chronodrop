@@ -1,37 +1,43 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoStory 怪物掉落查詢</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoStory 怪物掉落查詢</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <div id="themeToggleContainer"></div> 
+<body class="light-theme">
+    <div class="container">
+        <div id="themeToggleContainer">
+            <button class="theme-toggle-button" id="themeToggle">夜間模式</button>
+        </div>
         
-        <h1>ChronoStory 怪物掉落查詢</h1>
-            <p style="text-align: center; margin-top: 20px;">
-            有甚麼需要改的盡管跟我說>&lt;
-                <a href="https://forms.gle/im4KUPqZLqGZ1fha6" target="_blank" style="color: #007bff; font-weight: bold;">
-                點此提交意見回饋
-                </a>
-            </p>    
-        <div class="search-controls">
-            
-            <input type="text" id="searchInput" placeholder="輸入怪物名稱或掉落物品..." autocomplete="off">
-            
-            <div id="levelFilterControls" class="level-filter-controls">
-                </div>
-            
-            <div id="dataStatus" class="status-message">數據載入中...</div>
-        </div>
+        <h1>ChronoStory 怪物掉落查詢</h1>
 
-        <div class="results-grid" id="resultsGrid">
-            </div>
-        
-    </div>
-    <script src="app.js"></script>
+        <div class="search-controls">
+            <input type="text" id="searchInput" placeholder="輸入怪物名稱或掉落物品名稱 (例如: 蝸牛, 紅色藥水)">
+            
+            <div class="level-filter-controls">
+                <label for="minLevel">等級：</label>
+                <input type="number" id="minLevel" class="level-input" placeholder="最小 Lv" min="1">
+                <span class="level-separator">~</span>
+                <input type="number" id="maxLevel" class="level-input" placeholder="最大 Lv" min="1">
+                <button class="reset-button" id="resetFilters">重置</button>
+            </div>
+            
+            <p class="status-message" id="statusMessage">找到 0 筆記錄。</p>
+        </div>
+
+        <div class="results-grid" id="resultsGrid">
+            </div>
+
+        <p style="text-align: center; margin-top: 30px; color: var(--secondary-text-color);">
+            有甚麼需要修改的盡管跟我說 > <
+            <a href="javascript:void(0);" onclick="alert('感謝您的回饋！');">點此提交意見回饋</a>
+        </p>
+
+    </div>
+
+    <script src="app.js"></script>
 </body>
-
 </html>

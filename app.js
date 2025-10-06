@@ -1,4 +1,4 @@
-// 修正後的標頭名稱
+// 修正後的標頭名稱 (使用您提供的精確中文標頭)
 const HEADERS = ['怪物名稱', '等級', '生命值', '基礎經驗', '掉落物品'];
 let MONSTER_DROPS_RAW = []; 
 let MONSTER_DROPS_MERGED = []; 
@@ -10,7 +10,7 @@ const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
 const themeToggleContainer = document.getElementById('themeToggleContainer'); 
 
-// 新增： Min/Max 等級輸入框參考 (會在 initializeControls 中被賦值)
+// Min/Max 等級輸入框參考
 let minLevelInput;
 let maxLevelInput;
 
@@ -47,12 +47,11 @@ function toggleTheme() {
     }
 }
 
-// --- 核心 CSV 解析函式 ---
+// --- 核心 CSV 解析函式 (保持不變) ---
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
     try {
-        // 先載入主題偏好，避免閃爍
         loadThemePreference();
 
         dataStatus.textContent = "數據載入中...";
@@ -76,7 +75,7 @@ async function loadData() {
         const actualHeaders = lines[0].split(',').map(h => h.trim());
         
         if (actualHeaders.length !== HEADERS.length) {
-            dataStatus.textContent = `錯誤: 欄位數不匹配！預期 ${HEADERS.length} 欄位，實際找到 ${actualHeaders.length} 欄位。`;
+            dataStatus.textContent = `錯誤: 欄位數不匹配！預期 ${HEADERS.length} 欄位 (${HEADERS.join(', ')})，實際找到 ${actualHeaders.length} 欄位 (${actualHeaders.join(', ')} )。`;
             return;
         }
         
@@ -85,8 +84,6 @@ async function loadData() {
             const line = lines[i].trim();
             if (!line) continue;
             
-            // 由於掉落物品可能包含逗號，這裡需要更穩健的 CSV 解析，
-            // 但為保持簡潔，我們假設您的數據不包含逗號，且數量與標頭相符
             const values = line.split(',').map(v => v.trim()); 
             
             if (values.length === actualHeaders.length) {
@@ -115,10 +112,10 @@ function mergeMonsterDrops(rawDrops) {
     const mergedData = new Map();
 
     rawDrops.forEach(item => {
-        const monsterName = item['怪物名稱'];
+        // 使用修正後的中文標頭
+        const monsterName = item['怪物名稱']; 
         
         if (!mergedData.has(monsterName)) {
-            // 僅在第一次遇到怪物時記錄等級/HP/EXP 資訊
             mergedData.set(monsterName, {
                 '怪物名稱': monsterName,
                 '等級': item['等級'],
@@ -128,8 +125,9 @@ function mergeMonsterDrops(rawDrops) {
             });
         }
         
+        // 確保掉落物品不會被重複記錄，並處理空白
         const dropItem = item['掉落物品'].trim();
-        if (dropItem) {
+        if (dropItem && !mergedData.get(monsterName)['掉落物品'].includes(dropItem)) {
             mergedData.get(monsterName)['掉落物品'].push(dropItem);
         }
     });
@@ -140,11 +138,7 @@ function mergeMonsterDrops(rawDrops) {
 
 function highlightText(text, query) {
     if (!query) return text;
-
-    // 使用正規表達式進行全局、不分大小寫的替換
     const regex = new RegExp(`(${query})`, 'gi'); 
-    
-    // 使用 replace 的 function 參數來確保大小寫保持不變，只包裹標籤
     return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
 }
 
@@ -170,12 +164,14 @@ function renderTable(data) {
         let englishName = fullName;
         let chineseName = '';
 
-        // 嘗試從 'English Name (中文名稱)' 格式中分離名稱
-        const match = fullName.match(/(.*)\s*\((.*)\)/); 
+        // ***修正點 1: 調整名稱解析邏輯以匹配 'Snail (嫩寶)' 格式***
+        // 匹配 (任一內容)
+        const match = fullName.match(/(.*)\s*\(([^)]+)\)/); 
         if (match) {
-            englishName = match[1].trim();
-            chineseName = match[2].trim();
+            englishName = match[1].trim(); // Snail
+            chineseName = match[2].trim(); // 嫩寶
         } else {
+            // 如果不符合 (A (B)) 格式，則將整個名稱視為英文名稱
             englishName = fullName;
             chineseName = ''; 
         }
@@ -188,21 +184,17 @@ function renderTable(data) {
             <span class="name-cn">${highlightedCn}</span>
         `;
         
-        // --- 核心新增邏輯：計算 HP/EXP ---
+        // --- 核心邏輯：計算 HP/EXP ---
         let hpPerExpValue = 'N/A';
         const hp = parseInt(item['生命值']);
         const exp = parseInt(item['基礎經驗']);
         const levelStr = item['等級'].toLowerCase();
 
-        // 處理 HP/EXP 數值為 none 的情況
         if (levelStr === 'none' && item['生命值'].toLowerCase() === 'none' && item['基礎經驗'].toLowerCase() === 'none') {
-             // 如果等級/HP/EXP 都是 none，則顯示 'None'
              hpPerExpValue = 'None';
         } else if (!isNaN(hp) && !isNaN(exp) && exp > 0) {
-            // 計算並四捨五入到小數點後兩位
             hpPerExpValue = (hp / exp).toFixed(2);
         } else {
-             // 如果只有部分數值為 none 或 EXP 為 0，則顯示 'N/A'
              hpPerExpValue = 'N/A';
         }
 
@@ -222,7 +214,8 @@ function renderTable(data) {
                     <span class="hp">HP: ${item['生命值']}</span>
                     <span class="exp">EXP: ${item['基礎經驗']}</span>
                 </div>
-                ${statsHTML} <div class="drop-list">
+                ${statsHTML} 
+                <div class="drop-list">
                     ${dropListHTML}
                 </div>
             </div>
@@ -236,11 +229,11 @@ function renderTable(data) {
 function resetLevelFilters() {
     if (minLevelInput) minLevelInput.value = ''; 
     if (maxLevelInput) maxLevelInput.value = ''; 
-    applyFilters(); // 重新觸發篩選
+    applyFilters(); 
 }
 
 
-// --- 初始化所有控制項 (包含主題切換按鈕) ---
+// --- 初始化所有控制項 (保持不變) ---
 function initializeControls() {
     // 1. 生成等級篩選區塊 HTML
     levelFilterControls.innerHTML = `
@@ -256,7 +249,7 @@ function initializeControls() {
         <button id="themeToggleBtn" class="theme-toggle-button"></button>
     `;
     
-    // 3. 取得所有參考 (在 HTML 元素被插入後才能取得)
+    // 3. 取得所有參考 
     minLevelInput = document.getElementById('minLevelInput');
     maxLevelInput = document.getElementById('maxLevelInput');
     const resetBtn = document.getElementById('resetLevelBtn');
@@ -275,44 +268,37 @@ function initializeControls() {
     if (resetBtn) {
         resetBtn.addEventListener('click', resetLevelFilters);
     }
-    // 綁定主題切換按鈕事件
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', toggleTheme);
     }
     
-    // 確保按鈕文字正確顯示
     loadThemePreference(); 
-    
-    // 初始載入時應用過濾
     applyFilters(); 
 }
 
-// --- 應用篩選 (已修正等級篩選邏輯) ---
+// --- 應用篩選 (已修正等級篩選邏輯，保持不變) ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
-    // 1. 讀取等級過濾數值
     let minLevel = minLevelInput ? parseInt(minLevelInput.value) : 1;
     let maxLevel = maxLevelInput ? parseInt(maxLevelInput.value) : 999;
     
-    // 2. 篩選時的邏輯校驗：如果輸入為 NaN 或小於 1，則使用預設值
     minLevel = (isNaN(minLevel) || minLevel < 1) ? 1 : minLevel;
     maxLevel = (isNaN(maxLevel) || maxLevel < 1) ? 999 : maxLevel;
     
     let filtered = MONSTER_DROPS_MERGED; 
     
-    // 步驟一：自訂等級範圍過濾 (修正點在這裡)
+    // 步驟一：自訂等級範圍過濾
     filtered = filtered.filter(item => {
         const levelStr = item['等級'].toLowerCase();
-        const level = parseInt(levelStr); // 嘗試解析等級
+        const level = parseInt(levelStr); 
 
         // 情況 1: 等級是有效的數字
         if (!isNaN(level)) {
             return level >= minLevel && level <= maxLevel;
         }
 
-        // 情況 2: 等級是非數字 (例如 'none' 或空白)。
-        // 依照使用者要求，非數字等級的怪物應該被顯示，因為它們不違反任何數字範圍。
+        // 情況 2: 等級是非數字 (例如 'none')，允許通過
         return true; 
     });
 

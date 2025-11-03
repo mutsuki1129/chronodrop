@@ -9,13 +9,16 @@ const searchInput = document.getElementById('searchInput');
 const dataStatus = document.getElementById('dataStatus');
 const levelFilterControls = document.getElementById('levelFilterControls');
 const themeToggleContainer = document.getElementById('themeToggleContainer'); 
+// *** 新增：回到最上按鈕參考 ***
+const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
 // Min/Max 等級輸入框參考
 let minLevelInput;
 let maxLevelInput;
 
 
-// --- 主題切換相關函式 ---
+// --- 主題切換相關函式 (略) ---
+// ... (此處省略 loadThemePreference 和 toggleTheme 函式，請保留您檔案中的內容)
 
 // 在頁面載入時從 Local Storage 讀取主題偏好
 function loadThemePreference() {
@@ -47,7 +50,31 @@ function toggleTheme() {
     }
 }
 
-// --- 核心 CSV 解析函式 (保持不變) ---
+
+// --- 新增：回到最上功能函式 ---
+
+// 滾動回頂部
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // 平滑滾動
+    });
+}
+
+// 監聽滾動事件以顯示/隱藏按鈕
+function toggleScrollToTopButton() {
+    // 當垂直滾動超過 300 像素時顯示按鈕
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        scrollToTopBtn.classList.add('show');
+    } else {
+        scrollToTopBtn.classList.remove('show');
+    }
+}
+
+
+// --- 核心 CSV 解析函式 (略) ---
+// ... (此處省略 loadData, mergeMonsterDrops, highlightText 函式，請保留您檔案中的內容)
+
 async function loadData() {
     const CSV_FILE = 'data.csv';
 
@@ -112,7 +139,6 @@ function mergeMonsterDrops(rawDrops) {
     const mergedData = new Map();
 
     rawDrops.forEach(item => {
-        // 使用修正後的中文標頭
         const monsterName = item['怪物名稱']; 
         
         if (!mergedData.has(monsterName)) {
@@ -125,7 +151,6 @@ function mergeMonsterDrops(rawDrops) {
             });
         }
         
-        // 確保掉落物品不會被重複記錄，並處理空白
         const dropItem = item['掉落物品'].trim();
         if (dropItem && !mergedData.get(monsterName)['掉落物品'].includes(dropItem)) {
             mergedData.get(monsterName)['掉落物品'].push(dropItem);
@@ -141,7 +166,6 @@ function highlightText(text, query) {
     const regex = new RegExp(`(${query})`, 'gi'); 
     return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
 }
-
 
 function renderTable(data) {
     resultsGrid.innerHTML = ''; 
@@ -164,14 +188,11 @@ function renderTable(data) {
         let englishName = fullName;
         let chineseName = '';
 
-        // ***修正點 1: 調整名稱解析邏輯以匹配 'Snail (嫩寶)' 格式***
-        // 匹配 (任一內容)
         const match = fullName.match(/(.*)\s*\(([^)]+)\)/); 
         if (match) {
-            englishName = match[1].trim(); // Snail
-            chineseName = match[2].trim(); // 嫩寶
+            englishName = match[1].trim(); 
+            chineseName = match[2].trim(); 
         } else {
-            // 如果不符合 (A (B)) 格式，則將整個名稱視為英文名稱
             englishName = fullName;
             chineseName = ''; 
         }
@@ -225,7 +246,7 @@ function renderTable(data) {
 }
 
 
-// --- 重置等級篩選的函式 ---
+// --- 重置等級篩選的函式 (略) ---
 function resetLevelFilters() {
     if (minLevelInput) minLevelInput.value = ''; 
     if (maxLevelInput) maxLevelInput.value = ''; 
@@ -233,7 +254,7 @@ function resetLevelFilters() {
 }
 
 
-// --- 初始化所有控制項 (保持不變) ---
+// --- 初始化所有控制項 ---
 function initializeControls() {
     // 1. 生成等級篩選區塊 HTML
     levelFilterControls.innerHTML = `
@@ -271,12 +292,18 @@ function initializeControls() {
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', toggleTheme);
     }
+
+    // *** 新增：綁定回到最上按鈕事件和滾動事件 ***
+    if (scrollToTopBtn) {
+        scrollToTopBtn.addEventListener('click', scrollToTop);
+    }
+    window.addEventListener('scroll', toggleScrollToTopButton);
     
     loadThemePreference(); 
     applyFilters(); 
 }
 
-// --- 應用篩選 (已修正等級篩選邏輯，保持不變) ---
+// --- 應用篩選 (略) ---
 function applyFilters() {
     const query = searchInput.value.trim(); 
     
@@ -293,12 +320,10 @@ function applyFilters() {
         const levelStr = item['等級'].toLowerCase();
         const level = parseInt(levelStr); 
 
-        // 情況 1: 等級是有效的數字
         if (!isNaN(level)) {
             return level >= minLevel && level <= maxLevel;
         }
 
-        // 情況 2: 等級是非數字 (例如 'none')，允許通過
         return true; 
     });
 
